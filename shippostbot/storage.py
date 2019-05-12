@@ -9,7 +9,8 @@ s3 = boto3.resource('s3')
 
 
 class S3Bucket(object):
-    def __init__(self, bucket_name: str):
+    def __init__(self, region: str, bucket_name: str):
+        self.region = region
         self.bucket_name = bucket_name
         self.bucket = s3.Bucket(bucket_name)
         self.expiry_delta = timedelta(hours=1)
@@ -41,3 +42,9 @@ class S3Bucket(object):
         m = md5()
         m.update(blob)
         return b64encode(m.digest()).decode('utf-8')
+
+    def get_public_url(self, key: str) -> str:
+        scheme = 'https'
+        host = 's3-%s.amazonaws.com' % self.region
+        path = '%s/%s' % (self.bucket_name, key)
+        return '%s://%s/%s' % (scheme, host, path)

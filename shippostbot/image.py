@@ -2,7 +2,6 @@ from multiprocessing.pool import ThreadPool
 
 import requests
 from wand.color import Color
-from wand.display import display
 from wand.drawing import Drawing
 from wand.image import Image
 
@@ -31,8 +30,6 @@ def combine_images(*images_url: list) -> bytes:
                        image=img)
         draw(canvas)
         left += img.width
-
-    display(canvas)
     return canvas.make_blob(format='jpeg')
 
 
