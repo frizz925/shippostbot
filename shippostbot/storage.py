@@ -18,7 +18,7 @@ class S3Bucket(object):
     def upload_blob(self, name: str, blob: bytes,
                     content_type='image/jpeg') -> s3.Object:
         expires = datetime.now() + self.expiry_delta
-        logging.info('Uploading to S3, bucket: %s, key: %s, expiry: %s' % (
+        logging.info('Uploading object to S3, bucket: %s, key: %s, expiry: %s' % (
             self.bucket_name,
             name,
             expires.strftime('%Y-%m-%d %H:%M:%S')
@@ -32,6 +32,10 @@ class S3Bucket(object):
                                       Expires=expires)
 
     def delete_object(self, name: str) -> dict:
+        logging.info('Deleting object from S3, bucket: %s, key: %s' % (
+            self.bucket_name,
+            name
+        ))
         return self.bucket.delete_objects(Delete={
             'Objects': [{
                 'Key': name

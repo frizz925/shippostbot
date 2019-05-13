@@ -13,11 +13,13 @@ def create_post() -> Post:
     while True:
         anime = fetch_random_anime()
         if anime is None:
+            logger.info('Anime not found. Retrying...')
             continue
         logger.info('Fetched anime: %s' % anime)
 
         chara_nodes = copy.copy(anime['characters']['nodes'])
         if chara_nodes is None:
+            logger.info('Anime characters not found. Retrying...')
             continue
 
         selected_charas = []
@@ -38,6 +40,7 @@ def create_post() -> Post:
 
         # Since we're doing OTP, there should be at least two characters
         if len(selected_charas) < 2:
+            logger.info('No suitable anime characters found. Retrying...')
             continue
         logger.info('Selected characters: %s' % selected_charas)
 
