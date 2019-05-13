@@ -38,7 +38,7 @@ def main() -> Response:
     fb = Facebook(access_token)
     page = fb.get_page(page_id)
     res = page.publish_photo(post.caption, image_url)
-    logger.info(res)
+    logger.info(res.json())
     res.raise_for_status()
 
     s3_bucket.delete_object(s3_object.key)
