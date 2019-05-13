@@ -10,7 +10,7 @@ FETCH_ANIME_MAX_RETRY = 5
 
 def create_post() -> Post:
     logger = create_logger('create_post')
-    for _ in range(FETCH_ANIME_MAX_RETRY):
+    while True:
         anime = fetch_random_anime()
         if anime is None:
             continue
@@ -49,7 +49,6 @@ def create_post() -> Post:
                     caption=caption,
                     first_character=first_chara,
                     second_character=second_chara)
-    return None
 
 
 def to_anime(anime: dict) -> Anime:
