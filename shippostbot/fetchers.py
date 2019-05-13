@@ -8,12 +8,12 @@ ANILIST_BASE_URL = 'https://graphql.anilist.co'
 def fetch_random_anime():
     total = fetch_anime_total()
     page = secrets.randbelow(total)
-    media_node = fetch_anime_page(page, 1).pop()
-    media = fetch_anime(media_node['id'])
-    return media
+    anime_node = fetch_anime_page(page, 1).pop()
+    anime = fetch_anime(anime_node['id'])
+    return anime
 
 
-def fetch_anime(media_id: int) -> dict:
+def fetch_anime(anime_id: int) -> dict:
     result = anilist_query('''query($id: Int) {
         media: Media(id: $id, type: ANIME) {
             id
@@ -22,7 +22,7 @@ def fetch_anime(media_id: int) -> dict:
                 nodes { id }
             }
         }
-    }''', {'id': media_id})
+    }''', {'id': anime_id})
     return result['media']
 
 
