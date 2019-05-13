@@ -12,7 +12,7 @@ def lambda_handler(event, context):
     access_token = os.environ['FACEBOOK_ACCESS_TOKEN']
     page_id = os.environ['FACEBOOK_PAGE_ID']
 
-    is_encrypted_env = os.environ.get('ENCRYPTED_ENV', False) == 'true'
+    is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
         crypto = CryptoHelper()
         res = shippostbot.main(crypto.decrypt(region),
