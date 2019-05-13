@@ -1,4 +1,3 @@
-import os
 import sys
 from hashlib import sha1
 
@@ -11,12 +10,10 @@ from .social import Facebook
 from .storage import S3Bucket
 
 
-def main() -> Response:
-    region = os.environ['S3_REGION']
-    bucket_name = os.environ['S3_BUCKET_NAME']
-    access_token = os.environ['FACEBOOK_ACCESS_TOKEN']
-    page_id = os.environ['FACEBOOK_PAGE_ID']
-
+def main(region: str,
+         bucket_name: str,
+         access_token: str,
+         page_id: str) -> Response:
     log.init_logger()
     logger = log.create_logger('shippostbot.main')
 
