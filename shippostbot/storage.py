@@ -1,9 +1,10 @@
-import logging
 from base64 import b64encode
 from datetime import datetime, timedelta
 from hashlib import md5
 
 import boto3
+
+from .log import create_logger
 
 s3 = boto3.resource('s3')
 
@@ -14,11 +15,12 @@ class S3Bucket(object):
         self.bucket_name = bucket_name
         self.bucket = s3.Bucket(bucket_name)
         self.expiry_delta = timedelta(hours=1)
+        self.logger = create_logger('S3Bucket')
 
     def upload_blob(self, name: str, blob: bytes,
                     content_type='image/jpeg') -> s3.Object:
         expires = datetime.now() + self.expiry_delta
-        logging.info('Uploading object to S3, bucket: %s, key: %s, expiry: %s' % (
+        self.logger.info('Putting object to S3, bucket: %s, key: %s, expiry: %s' % (
             self.bucket_name,
             name,
             expires.strftime('%Y-%m-%d %H:%M:%S')
@@ -32,7 +34,7 @@ class S3Bucket(object):
                                       Expires=expires)
 
     def delete_object(self, name: str) -> dict:
-        logging.info('Deleting object from S3, bucket: %s, key: %s' % (
+        self.logger.info('Deleting object from S3, bucket: %s, key: %s' % (
             self.bucket_name,
             name
         ))
