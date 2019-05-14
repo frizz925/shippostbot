@@ -5,8 +5,6 @@ from .entities import Anime, Character, Post
 from .fetchers import fetch_character, fetch_random_anime
 from .log import create_logger
 
-FETCH_ANIME_MAX_RETRY = 5
-
 
 def create_post() -> Post:
     logger = create_logger('create_post')
