@@ -73,5 +73,6 @@ def create_caption(anime: Anime,
 
 
 def create_character_name(character: Character) -> str:
-    name = '%s %s' % (character.last_name, character.first_name)
-    return name.strip()
+    name_parts = [character.last_name, character.first_name]
+    name_parts = [name for name in name_parts if name is not None]
+    return ' '.join(name_parts).strip()
