@@ -25,7 +25,7 @@ def main(region: str,
                            post.second_character.image_url)
     m = sha1()
     m.update(image)
-    image_name = '%s.jpeg' % m.hexdigest()
+    image_name = '%s.png' % m.hexdigest()
 
     s3_bucket = S3Bucket(region, bucket_name)
     s3_object = s3_bucket.upload_blob(image_name, image)

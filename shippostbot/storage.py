@@ -18,7 +18,7 @@ class S3Bucket(object):
         self.logger = create_logger(S3Bucket)
 
     def upload_blob(self, name: str, blob: bytes,
-                    content_type='image/jpeg') -> s3.Object:
+                    content_type='image/png') -> s3.Object:
         expires = datetime.now() + self.expiry_delta
         self.logger.info('Putting object to S3, bucket: %s, key: %s, expiry: %s' % (
             self.bucket_name,

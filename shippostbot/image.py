@@ -30,7 +30,7 @@ def combine_images(*images_url: list) -> bytes:
                        image=img)
         draw(canvas)
         left += img.width
-    return canvas.make_blob(format='jpeg')
+    return canvas.make_blob(format='png')
 
 
 def fetch_image(image_url: str) -> bytes:
