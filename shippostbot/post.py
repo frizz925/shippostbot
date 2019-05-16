@@ -7,7 +7,7 @@ from .log import create_logger
 
 
 def create_post() -> Post:
-    logger = create_logger('create_post')
+    logger = create_logger(create_post)
     while True:
         anime = fetch_random_anime()
         if anime is None:

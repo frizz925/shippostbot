@@ -1,8 +1,15 @@
+import inspect
 import logging
 import sys
 
 
-def create_logger(name: str) -> logging.Logger:
+def create_logger(obj) -> logging.Logger:
+    if inspect.isclass(obj) or inspect.isfunction(obj):
+        name = obj.__name__
+    elif isinstance(obj, object):
+        name = obj.__class__.__name__
+    else:
+        name = obj
     return logging.getLogger(name)
 
 
