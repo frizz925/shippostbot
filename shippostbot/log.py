@@ -1,5 +1,6 @@
 import inspect
 import logging
+import os
 import sys
 
 
@@ -14,8 +15,13 @@ def create_logger(obj) -> logging.Logger:
 
 
 def init_logger():
-    fmt = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
-    formatter = logging.Formatter(fmt, datefmt='%Y-%m-%d %H:%M:%S')
+    cloudwatch_enabled = os.environ.get('CLOUDWATCH_ENABLED', False) is not False
+    if cloudwatch_enabled:
+        fmt = '[%(name)s] [%(levelname)s] %(message)s'
+        formatter = logging.Formatter(fmt)
+    else:
+        fmt = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
+        formatter = logging.Formatter(fmt, datefmt='%Y-%m-%d %H:%M:%S')
 
     stdout = logging.StreamHandler(stream=sys.stdout)
     stdout.setFormatter(formatter)
