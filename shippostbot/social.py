@@ -46,19 +46,26 @@ class Facebook(object):
             'access_token': self.access_token
         }, **params)
 
-    def get_page(self, page_id: str) -> FacebookPage:
-        return FacebookPage(self, page_id)
+    def get_user(self, user_id: str = None) -> FacebookPage:
+        return FacebookPage(self, user_id)
 
 
-class FacebookPage(object):
-    def __init__(self, root: Facebook, page_id: str):
+class FacebookUser(object):
+    def __init__(self, root: Facebook, user_id: str = None):
         self.root = root
-        self.page_id = page_id
-        self.logger = log.create_logger('FacebookPage')
+        self.user_id = user_id
+        self.logger = log.create_logger(FacebookUser)
+    
+    def post(self, path, **kwargs) -> Response:
+        endpoint = self.get_user_endpoint()
+        return self.root.post('%s/%s' % (endpoint, path), **kwargs)
 
     def publish_photo(self, caption: str, image_url: str) -> Response:
         self.logger.info('Publishing photo, caption: %s, image url: %s' % (caption, image_url))
-        return self.root.post('%s/photos' % self.page_id, params={
+        return self.post('photos', params={
             'caption': caption,
             'url': image_url
         })
+
+    def get_user_endpoint(self) -> str:
+        return self.user_id if self.user_id is not None else 'me'

@@ -12,10 +12,9 @@ from .storage import S3Bucket
 
 def main(region: str,
          bucket_name: str,
-         access_token: str,
-         page_id: str) -> Response:
+         access_token: str) -> Response:
     log.init_logger()
-    logger = log.create_logger('shippostbot.main')
+    logger = log.create_logger(main)
 
     post = create_post()
     if post is None:
@@ -33,8 +32,7 @@ def main(region: str,
     image_url = s3_bucket.get_public_url(s3_object.key)
 
     fb = Facebook(access_token)
-    page = fb.get_page(page_id)
-    res = page.publish_photo(post.caption, image_url)
+    res = fb.publish_photo(post.caption, image_url)
     logger.info(res.json())
     res.raise_for_status()
 
