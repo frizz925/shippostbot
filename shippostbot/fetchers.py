@@ -51,15 +51,15 @@ def fetch_character(chara_id: int) -> dict:
 
 
 def fetch_character_total() -> int:
-    return fetch_total(Fields('character', 'id'))
+    return fetch_total(Fields('characters', 'id'))
 
 
 def fetch_character_page(page: int, per_page: int) -> list:
-    return fetch_page(Fields('character', 'id'), page, per_page)
+    return fetch_page(Fields('characters', 'id'), page, per_page)
 
 
 def fetch(obj: str, params, fields: list) -> dict:
-    if isinstance(params, str):
+    if not isinstance(params, dict):
         params = {'id': params}
     query = Query(obj, params, fields)
     root = Root(query)
@@ -88,4 +88,5 @@ def fetch_page(fields: Fields, page: int, per_page: int) -> list:
 def anilist_query(query: str, variables: dict = {}) -> dict:
     res = requests.post(ANILIST_BASE_URL, json={
                         'query': query, 'variables': variables})
+    res.raise_for_status()
     return res.json().get('data', {})
