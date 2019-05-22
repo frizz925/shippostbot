@@ -2,63 +2,87 @@ import secrets
 
 import requests
 
+from .graphql import Field, Fields, Query, Root, Schema
+
 ANILIST_BASE_URL = 'https://graphql.anilist.co'
 
 
-def fetch_random_anime():
-    total = fetch_anime_total()
+def fetch_random_media():
+    return fetch_random(fetch_media_total,
+                        fetch_media_page,
+                        fetch_media)
+
+
+def fetch_random_character():
+    return fetch_random(fetch_character_total,
+                        fetch_character_page,
+                        fetch_character)
+
+
+def fetch_random(fn_total, fn_page_fetch, fn_fetch) -> dict:
+    total = fn_total()
     page = secrets.randbelow(total)
-    anime_node = fetch_anime_page(page, 1).pop()
-    anime = fetch_anime(anime_node['id'])
-    return anime
+    node = fn_page_fetch(page, 1).pop()
+    return fn_fetch(node['id'])
 
 
-def fetch_anime(anime_id: int) -> dict:
-    result = anilist_query('''query($id: Int) {
-        media: Media(id: $id, type: ANIME) {
-            id
-            title { userPreferred }
-            characters {
-                nodes { id }
-            }
-        }
-    }''', {'id': anime_id})
-    return result['media']
+def fetch_media(media_id: int) -> dict:
+    return fetch('Media', media_id, [
+        'id',
+        Fields('title', 'userPreferred'),
+        Fields('characters', Fields('nodes', 'id'))
+    ])
 
 
-def fetch_anime_total() -> int:
-    result = anilist_query('''{
-        page: Page(page: 1, perPage: 1) {
-            pageInfo { total }
-            media(type: ANIME) { id }
-        }
-    }''')
-    return result['page']['pageInfo']['total']
+def fetch_media_total() -> int:
+    return fetch_total(Fields('media', 'id'))
 
 
-def fetch_anime_page(page: int, per_page: int) -> list:
-    result = anilist_query('''query($page: Int, $perPage: Int) {
-        page: Page(page: $page, perPage: $perPage) {
-            media(type: ANIME) { id }
-        }
-    }''', {'page': page, 'perPage': per_page})
-    return result['page']['media']
+def fetch_media_page(page: int, per_page: int) -> list:
+    return fetch_page(Fields('media', 'id'), page, per_page)
 
 
 def fetch_character(chara_id: int) -> dict:
-    result = anilist_query('''query($id: Int) {
-        character: Character(id: $id) {
-            id
-            name {
-                first
-                last
-            }
-            image {
-                large
-            }
-        }
-    }''', {'id': chara_id})
-    return result['character']
+    return fetch('Character', chara_id, [
+        'id',
+        Fields('name', ['first', 'last']),
+        Fields('image', 'large')
+    ])
+
+
+def fetch_character_total() -> int:
+    return fetch_total(Fields('character', 'id'))
+
+
+def fetch_character_page(page: int, per_page: int) -> list:
+    return fetch_page(Fields('character', 'id'), page, per_page)
+
+
+def fetch(obj: str, params, fields: list) -> dict:
+    if isinstance(params, str):
+        params = {'id': params}
+    query = Query(obj, params, fields)
+    root = Root(query)
+    result = anilist_query(str(root))
+    return result[obj]
+
+
+def fetch_total(fields: Fields) -> int:
+    page = Query('Page', {'page': 1, 'perPage': 1}, [
+        Fields('pageInfo', 'total'),
+        fields
+    ], alias='page')
+    root = Root(page)
+    result = anilist_query(str(root))
+    return result['page']['pageInfo']['total']
+
+
+def fetch_page(fields: Fields, page: int, per_page: int) -> list:
+    page = Query('Page', {'page': page, 'perPage': per_page}, fields, alias='page')
+    root = Root(page)
+    result = anilist_query(str(root))
+    name = fields.name if fields.alias is None else fields.alias
+    return result['page'][name]
 
 
 def anilist_query(query: str, variables: dict = {}) -> dict:
