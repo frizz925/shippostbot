@@ -5,7 +5,7 @@ from requests import Response
 
 from . import log
 from .image import combine_images
-from .post import create_post
+from .post import create_anime_post
 from .social import Facebook
 from .storage import S3Bucket
 
@@ -16,7 +16,7 @@ def main(region: str,
     log.init_logger()
     logger = log.create_logger(main)
 
-    post = create_post()
+    post = create_anime_post()
     if post is None:
         log.error('No anime characters found!')
         sys.exit(1)

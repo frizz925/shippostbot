@@ -1,23 +1,23 @@
 import copy
 import secrets
 
-from .entities import Anime, Character, Post
-from .fetchers import fetch_character, fetch_random_anime
+from .entities import Character, Media, Post
+from .fetchers import fetch_character, fetch_random_media
 from .log import create_logger
 
 
-def create_post() -> Post:
-    logger = create_logger(create_post)
+def create_anime_post() -> Post:
+    logger = create_logger(create_anime_post)
     while True:
-        anime = fetch_random_anime()
-        if anime is None:
-            logger.info('Anime not found. Retrying...')
+        media = fetch_random_media()
+        if media is None:
+            logger.info('Media not found. Retrying...')
             continue
-        logger.info('Fetched anime: %s' % anime)
+        logger.info('Fetched media: %s' % media)
 
-        chara_nodes = copy.copy(anime['characters']['nodes'])
+        chara_nodes = copy.copy(media['characters']['nodes'])
         if chara_nodes is None:
-            logger.info('Anime characters not found. Retrying...')
+            logger.info('Characters not found. Retrying...')
             continue
 
         selected_charas = []
@@ -38,22 +38,22 @@ def create_post() -> Post:
 
         # Since we're doing OTP, there should be at least two characters
         if len(selected_charas) < 2:
-            logger.info('No suitable anime characters found. Retrying...')
+            logger.info('No suitable characters found. Retrying...')
             continue
         logger.info('Selected characters: %s' % selected_charas)
 
-        anime = to_anime(anime)
+        media = to_media(media)
         first_chara = to_character(selected_charas.pop(0))
         second_chara = to_character(selected_charas.pop(0))
-        caption = create_caption(anime, first_chara, second_chara)
-        return Post(anime=anime,
+        caption = create_caption(media, first_chara, second_chara)
+        return Post(media=media,
                     caption=caption,
                     first_character=first_chara,
                     second_character=second_chara)
 
 
-def to_anime(anime: dict) -> Anime:
-    return Anime(title=anime['title']['userPreferred'])
+def to_media(media: dict) -> Media:
+    return Media(title=media['title']['userPreferred'])
 
 
 def to_character(chara: dict) -> Character:
@@ -62,12 +62,12 @@ def to_character(chara: dict) -> Character:
                      image_url=chara['image']['large'])
 
 
-def create_caption(anime: Anime,
+def create_caption(media: Media,
                    first_chara: Character,
                    second_chara: Character) -> str:
     first_name = create_character_name(first_chara)
     second_name = create_character_name(second_chara)
-    return '%s x %s\r\n(%s)' % (first_name, second_name, anime.title)
+    return '%s x %s\r\n(%s)' % (first_name, second_name, media.title)
 
 
 def create_character_name(character: Character) -> str:

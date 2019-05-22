@@ -1,4 +1,4 @@
-from shippostbot.entities import Anime, Character
+from shippostbot.entities import Character, Media
 from shippostbot.post import create_caption, create_character_name
 
 
@@ -23,12 +23,12 @@ def test_create_character_name():
 
 
 def test_create_caption():
-    anime = Anime(title='Darling in the Franxx')
+    media = Media(title='Darling in the Franxx')
     first_chara = Character(first_name='Hiro',
                             last_name=None,
                             image_url=None)
     second_chara = Character(first_name='Zero Two',
                              last_name=None,
                              image_url=None)
-    caption = create_caption(anime, first_chara, second_chara)
+    caption = create_caption(media, first_chara, second_chara)
     assert caption == 'Hiro x Zero Two\r\n(Darling in the Franxx)'
