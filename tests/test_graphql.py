@@ -1,6 +1,6 @@
 import sys
 
-from shippostbot.graphql import Field, Fields, Query
+from shippostbot.graphql import Field, Fields, Query, Root
 
 EXPECTED_QUERY = '''query($id: Int, $page: Int, $perPage: Int, $search: String) {
   Page(page: $page, perPage: $perPage) {
@@ -16,6 +16,17 @@ EXPECTED_QUERY = '''query($id: Int, $page: Int, $perPage: Int, $search: String) 
       title {
         romaji
       }
+    }
+  }
+}'''
+
+EXPECTED_ROOT = '''{
+  page: Page(page: 1, perPage: 1) {
+    pageInfo {
+      total
+    }
+    media(type: ANIME) {
+      id
     }
   }
 }'''
@@ -44,3 +55,15 @@ def test_query():
         '$search': 'String'
     }, page)
     assert str(query) == EXPECTED_QUERY
+
+
+def test_root():
+    page = Query('Page', {
+        'page': 1,
+        'perPage': 1
+    }, [
+        Fields('pageInfo', 'total'),
+        Query('media', {'type': 'ANIME'}, 'id')
+    ], alias='page')
+    root = Root(page)
+    assert str(root) == EXPECTED_ROOT
