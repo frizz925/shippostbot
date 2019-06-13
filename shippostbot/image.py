@@ -24,7 +24,7 @@ def combine_images(*images_url: list) -> bytes:
     draw(canvas)
 
     for img in images:
-        draw.composite(operator='replace',
+        draw.composite(operator='over',
                        top=0, left=left,
                        width=img.width, height=img.height,
                        image=img)
