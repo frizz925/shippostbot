@@ -2,7 +2,8 @@ import secrets
 
 import requests
 
-from .graphql import Field, Fields, Query, Root, Schema
+from .graphql import Fields, Query, Root
+from .log import create_logger
 
 ANILIST_BASE_URL = 'https://graphql.anilist.co'
 
@@ -29,6 +30,7 @@ def fetch_random(fn_total, fn_page_fetch, fn_fetch) -> dict:
 def fetch_media(media_id: int) -> dict:
     return fetch('Media', media_id, [
         'id',
+        'siteUrl',
         Fields('title', 'userPreferred'),
         Fields('characters', Fields('nodes', 'id'))
     ])
@@ -45,8 +47,14 @@ def fetch_media_page(page: int, per_page: int) -> list:
 def fetch_character(chara_id: int) -> dict:
     return fetch('Character', chara_id, [
         'id',
+        'siteUrl',
         Fields('name', ['first', 'last']),
-        Fields('image', 'large')
+        Fields('image', 'large'),
+        Query('media', {
+            'page': 1,
+            'perPage': 1,
+            'sort': 'POPULARITY_DESC',
+        }, Fields('nodes', 'id'))
     ])
 
 
@@ -59,11 +67,14 @@ def fetch_character_page(page: int, per_page: int) -> list:
 
 
 def fetch(obj: str, params, fields: list) -> dict:
+    logger = create_logger(fetch)
     if not isinstance(params, dict):
         params = {'id': params}
     query = Query(obj, params, fields)
     root = Root(query)
-    result = anilist_query(str(root))
+    root_query = str(root)
+    logger.debug(root_query)
+    result = anilist_query(root_query)
     return result[obj]
 
 
