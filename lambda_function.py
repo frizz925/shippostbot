@@ -7,20 +7,26 @@ import shippostbot
 
 
 def lambda_handler(event, context):
-    region = os.environ['S3_REGION']
-    bucket_name = os.environ['S3_BUCKET_NAME']
-    access_token = os.environ['FACEBOOK_ACCESS_TOKEN']
+    shippostbot.log.CLOUDWATCH_ENABLED = True
+
+    region = os.environ.get('S3_REGION')
+    bucket_name = os.environ.get('S3_BUCKET_NAME')
+    access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
+    selection_type = os.environ.get('SELECTION_TYPE')
 
     is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
         crypto = CryptoHelper()
         res = shippostbot.main(crypto.decrypt(region),
                                crypto.decrypt(bucket_name),
-                               crypto.decrypt(access_token))
+                               crypto.decrypt(access_token),
+                               crypto.decrypt(selection_type))
     else:
         res = shippostbot.main(region,
                                bucket_name,
-                               access_token)
+                               access_token,
+                               selection_type)
+
     return {
         'statusCode': 200,
         'data': res.json()
