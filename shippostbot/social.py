@@ -1,9 +1,9 @@
 from requests import Request, Response, Session
 
-from . import log
+from .log import create_logger
 
 
-class FacebookPage(object):
+class FacebookUser(object):
     pass
 
 
@@ -14,6 +14,7 @@ class Facebook(object):
         self.access_token = access_token
         self.api_version = api_version
         self.session = Session()
+        self.logger = create_logger(Facebook)
 
     def get_endpoint(self) -> str:
         return 'https://graph.facebook.com/%s' % self.api_version
@@ -46,16 +47,22 @@ class Facebook(object):
             'access_token': self.access_token
         }, **params)
 
-    def get_user(self, user_id: str = None) -> FacebookPage:
-        return FacebookPage(self, user_id)
+    def get_user(self, user_id: str = None) -> FacebookUser:
+        return FacebookUser(self, user_id)
+
+    def publish_comment(self, post_id: str, message: str) -> Response:
+        self.logger.info('Commenting on post %s, message: %s' % (post_id, message))
+        return self.post('%s/comments' % post_id, params={
+            'message': message
+        })
 
 
 class FacebookUser(object):
     def __init__(self, root: Facebook, user_id: str = None):
         self.root = root
         self.user_id = user_id
-        self.logger = log.create_logger(FacebookUser)
-    
+        self.logger = create_logger(FacebookUser)
+
     def post(self, path, **kwargs) -> Response:
         endpoint = self.get_user_endpoint()
         return self.root.post('%s/%s' % (endpoint, path), **kwargs)
