@@ -2,17 +2,21 @@ from multiprocessing.pool import ThreadPool
 
 import requests
 from wand.color import Color
+from wand.display import display
 from wand.drawing import Drawing
 from wand.image import Image
 
+DEBUG_IMAGE = False
+
 
 def combine_images(*images_url: list) -> bytes:
-    pool = ThreadPool(2)
-    images = pool.map(fetch_image, images_url)
-    images = [Image(blob=img) for img in images]
+    images = []
+    with ThreadPool() as pool:
+        images = pool.map(fetch_image, images_url)
 
-    max_image = max(images, key=lambda x: x.height)
-    max_height = max_image.height
+    images = [Image(blob=img) for img in images]
+    min_image = min(images, key=lambda x: x.height)
+    max_height = min_image.height
 
     sum_width = sum([x.width for x in images])
     canvas = Image(width=sum_width, height=max_height)
@@ -30,6 +34,10 @@ def combine_images(*images_url: list) -> bytes:
                        image=img)
         draw(canvas)
         left += img.width
+
+    if DEBUG_IMAGE:
+        display(canvas, server_name=':1')
+
     return canvas.make_blob(format='png')
 
 
