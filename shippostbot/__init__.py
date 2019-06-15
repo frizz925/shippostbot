@@ -3,26 +3,34 @@ from hashlib import sha1
 
 from requests import Response
 
-from . import log
+from . import image, log
 from .image import combine_images
-from .post import create_anime_post
+from .post import SelectionType, create_post
 from .social import Facebook
 from .storage import S3Bucket
+
+DEBUG_IMAGE = False
 
 
 def main(region: str,
          bucket_name: str,
-         access_token: str) -> Response:
+         access_token: str,
+         selection_type=None) -> Response:
     log.init_logger()
     logger = log.create_logger(main)
 
-    post = create_anime_post()
+    if selection_type is None:
+        selection_type = SelectionType.FROM_MEDIA
+    elif isinstance(selection_type, str):
+        selection_type = getattr(SelectionType, selection_type, SelectionType.FROM_MEDIA)
+    post = create_post(selection_type)
     if post is None:
-        log.error('No anime characters found!')
-        sys.exit(1)
+        raise Exception('Can\'t create post!')
+    logger.info('Post caption: ' + post.caption)
+    logger.info('Post comment: ' + post.comment)
 
-    image = combine_images(post.first_character.image_url,
-                           post.second_character.image_url)
+    chara_images = [c.image_url for c in post.characters]
+    image = combine_images(*chara_images)
     m = sha1()
     m.update(image)
     image_name = '%s.png' % m.hexdigest()
@@ -32,9 +40,18 @@ def main(region: str,
     image_url = s3_bucket.get_public_url(s3_object.key)
 
     fb = Facebook(access_token)
-    res = fb.publish_photo(post.caption, image_url)
+    user = fb.get_user()
+
+    res = user.publish_photo(post.caption, image_url)
+    # Delete image immediately after publishing, even if it actually fails
+    s3_bucket.delete_object(s3_object.key)
+    res_json = res.json()
+    logger.info(res_json)
+    res.raise_for_status()
+
+    post_id = res_json['post_id']
+    res = fb.publish_comment(post_id, post.comment)
     logger.info(res.json())
     res.raise_for_status()
 
-    s3_bucket.delete_object(s3_object.key)
     return res
