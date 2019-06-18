@@ -1,0 +1,20 @@
+@startuml ShippostBot
+ShippostBot -> "AniList GraphQL API": Fetch random character
+ShippostBot <-- "AniList GraphQL API": Character node
+ShippostBot -> "AniList GraphQL API": Fetch media from character
+ShippostBot <-- "AniList GraphQL API": Media node
+ShippostBot -> ShippostBot: Randomly selects a pair of characters
+ShippostBot -> "AniList GraphQL API": Fetch second character
+ShippostBot <-- "AniList GraphQL API": Character node
+ShippostBot -> "AniList CDN": Fetch character images
+ShippostBot <-- "AniList CDN": Raw character images
+ShippostBot -> ShippostBot: Combine character images
+ShippostBot -> S3: Put combined images into bucket
+ShippostBot <-- S3: S3 object
+ShippostBot -> ShippostBot: Get S3 object public URL
+ShippostBot -> Facebook: Publish post and upload image
+ShippostBot <-- Facebook: Post ID
+ShippostBot -> S3: Delete S3 object from bucket
+ShippostBot -> Facebook: Publish comment on post
+ShippostBot <-- Facebook: Comment ID
+@enduml
