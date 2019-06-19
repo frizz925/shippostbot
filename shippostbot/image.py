@@ -63,9 +63,10 @@ def combine_images(*images_url: list) -> bytes:
     for img in images:
         if img.height < max_height:
             img = resizer.resize(img, max_height / img.height)
+
         if img.width < max_width:
             img = resizer.resize(img, max_width / img.width)
-        if img.width > max_width:
+        elif img.width > max_width:
             # Do a bit of cropping so it's centered
             crop_left = round((img.width - max_width) / 2)
             crop_right = crop_left + max_width
