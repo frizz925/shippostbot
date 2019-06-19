@@ -1,4 +1,6 @@
+import os
 from multiprocessing.pool import ThreadPool
+from statistics import mean
 
 import requests
 from wand.color import Color
@@ -9,17 +11,48 @@ from wand.image import Image
 DEBUG_IMAGE = False
 
 
+class ImageResizer(object):
+    def __init__(self, max_width: int, max_height: int):
+        self.max_width = max_width
+        self.max_height = max_height
+
+    def resize(self, img: Image, mult: float) -> Image:
+        # No need to waste our resources for resizing by the same exact multiplier (1:1)
+        if mult == 1.0:
+            return img
+        # Or even invalid multiplier (raise exception instead)
+        elif mult <= 0:
+            raise ValueError("Image resize multiplier must not be less than 0!")
+
+        # Resize the image using the multiplier
+        new_width = round(img.width * mult)
+        new_height = round(img.height * mult)
+        img.adaptive_resize(new_width, new_height)
+
+        # Then crop the image so it's centered
+        crop_left = round((self.max_width - img.width) / 2)
+        if crop_left < 0:
+            crop_left = 0
+        crop_right = crop_left + self.max_width
+        if crop_right > img.width:
+            crop_right = img.width
+        img.crop(crop_left, 0, crop_right, self.max_height)
+
+        return img
+
+
 def combine_images(*images_url: list) -> bytes:
     images = []
     with ThreadPool() as pool:
         images = pool.map(fetch_image, images_url)
 
     images = [Image(blob=img) for img in images]
-    min_image = min(images, key=lambda x: x.height)
-    max_height = min_image.height
+    max_width = round(mean(img.width for img in images))
+    max_height = round(mean(img.height for img in images))
+    sum_width = max_width * len(images)
 
-    sum_width = sum([x.width for x in images])
     canvas = Image(width=sum_width, height=max_height)
+    resizer = ImageResizer(max_width, max_height)
 
     left = 0
     draw = Drawing()
@@ -28,6 +61,16 @@ def combine_images(*images_url: list) -> bytes:
     draw(canvas)
 
     for img in images:
+        if img.height < max_height:
+            img = resizer.resize(img, max_height / img.height)
+        if img.width < max_width:
+            img = resizer.resize(img, max_width / img.width)
+        if img.width > max_width:
+            # Do a bit of cropping so it's centered
+            crop_left = round((img.width - max_width) / 2)
+            crop_right = crop_left + max_width
+            img.crop(crop_left, 0, crop_right, img.height)
+
         draw.composite(operator='over',
                        top=0, left=left,
                        width=img.width, height=img.height,
@@ -36,7 +79,8 @@ def combine_images(*images_url: list) -> bytes:
         left += img.width
 
     if DEBUG_IMAGE:
-        display(canvas, server_name=':1')
+        server_name = os.environ.get('DISPLAY', ':0')
+        display(canvas, server_name=server_name)
 
     return canvas.make_blob(format='png')
 
