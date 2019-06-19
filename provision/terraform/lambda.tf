@@ -23,13 +23,16 @@ resource "aws_lambda_function" "shippostbot_lambda" {
   }
 }
 
-resource "aws_iam_role" "shippostbot_lambda_role" {
-  name = "ShippostBot-lambda-role"
-  path = "/shippostbot/"
-  assume_role_policy = "${data.aws_iam_policy_document.shippostbot_lambda_role.json}"
+resource "aws_lambda_permission" "shippostbot_lambda_exec" {
+  statement_id = "ShippostBotExecutionFromCloudWatch"
+  action = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.shippostbot_lambda.function_name}"
+  principal = "events.amazonaws.com"
+  source_arn = "${aws_cloudwatch_event_rule.shippostbot_scheduler.arn}"
 }
 
 resource "aws_cloudwatch_event_target" "shippostbot_lambda_event" {
+  target_id = "ShippostBotExecutionEvent"
   rule = "${aws_cloudwatch_event_rule.shippostbot_scheduler.name}"
   arn = "${aws_lambda_function.shippostbot_lambda.arn}"
 }
@@ -42,6 +45,12 @@ resource "aws_iam_role_policy_attachment" "shippostbot_lambda_log" {
 resource "aws_iam_role_policy_attachment" "shippostbot_lambda_s3" {
   role = "${aws_iam_role.shippostbot_lambda_role.name}"
   policy_arn = "${aws_iam_policy.shippostbot_s3_access_policy.arn}"
+}
+
+resource "aws_iam_role" "shippostbot_lambda_role" {
+  name = "ShippostBot-lambda-role"
+  path = "/shippostbot/"
+  assume_role_policy = "${data.aws_iam_policy_document.shippostbot_lambda_role.json}"
 }
 
 data "aws_iam_policy_document" "shippostbot_lambda_role" {
