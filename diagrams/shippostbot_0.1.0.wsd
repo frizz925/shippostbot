@@ -1,4 +1,5 @@
 @startuml ShippostBot
+CloudWatch -> ShippostBot: Trigger event
 ShippostBot -> "AniList GraphQL API": Fetch random character
 ShippostBot <-- "AniList GraphQL API": Character node
 ShippostBot -> "AniList GraphQL API": Fetch media from character
