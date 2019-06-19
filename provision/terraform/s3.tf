@@ -6,13 +6,14 @@ resource "aws_s3_bucket" "shippostbot_s3" {
     App = "ShippostBot"
     Environment = "Production"
     Service = "S3"
+    Access = "PublicRead"
   }
 }
 
 resource "aws_iam_policy" "shippostbot_s3_access_policy" {
   name = "ShippostBotS3FullAccess"
   path = "/shippostbot/"
-  description = "Policy to allow full access to ShippostBot bucket"
+  description = "Policy to allow full access to ShippostBot buckets"
   policy = "${data.aws_iam_policy_document.shippostbot_s3_access_policy.json}"
 }
 
