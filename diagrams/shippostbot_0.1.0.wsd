@@ -4,7 +4,7 @@ ShippostBot -> "AniList GraphQL API": Fetch random character
 ShippostBot <-- "AniList GraphQL API": Character node
 ShippostBot -> "AniList GraphQL API": Fetch media from character
 ShippostBot <-- "AniList GraphQL API": Media node
-ShippostBot -> ShippostBot: Randomly selects a pair of characters
+ShippostBot -> ShippostBot: Randomly select a pair of characters
 ShippostBot -> "AniList GraphQL API": Fetch second character
 ShippostBot <-- "AniList GraphQL API": Character node
 ShippostBot -> "AniList CDN": Fetch character images
