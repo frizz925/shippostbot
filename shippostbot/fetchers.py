@@ -53,7 +53,6 @@ def fetch_character(chara_id: int) -> dict:
         Query('media', {
             'page': 1,
             'perPage': 1,
-            'sort': 'POPULARITY_DESC',
         }, Fields('nodes', 'id'))
     ])
 
