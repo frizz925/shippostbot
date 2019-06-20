@@ -9,8 +9,6 @@ from .post import SelectionType, create_post
 from .social import Facebook
 from .storage import S3Bucket
 
-DEBUG_IMAGE = False
-
 
 def main(region: str,
          bucket_name: str,
