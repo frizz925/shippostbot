@@ -1,8 +1,9 @@
 import copy
+import json
 import secrets
+from collections import namedtuple
 from enum import Enum
 from multiprocessing.pool import ThreadPool
-from threading import Lock
 
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
@@ -45,13 +46,13 @@ def create_post(selection_type: SelectionType) -> Post:
             logger.info('No suitable media found. Retrying...')
             continue
 
-        media = [to_media(m) for m in selected_media]
-        characters = [to_character(c) for c in selected_charas]
+        media = selected_media
+        characters = selected_charas
         caption = create_caption(characters)
         comment = create_comment(characters, media)
 
-        logger.info('Selected characters: %s' % characters)
-        logger.info('Selected media: %s' % media)
+        logger.info('Selected characters: %s' % to_str(characters))
+        logger.info('Selected media: %s' % to_str(media))
         return Post(characters=characters,
                     media=media,
                     caption=caption,
@@ -61,33 +62,28 @@ def create_post(selection_type: SelectionType) -> Post:
 def select_character_to_media() -> tuple:
     logger = create_logger(select_character_to_media)
 
-    first_chara = None
-    while not validate_character(first_chara):
-        first_chara = select_random_character()
+    first_chara = select_random_character()
+    logger.info('Fetched first character: %s' % to_str(first_chara))
 
-    logger.info('Fetched first character: %s' % first_chara)
-
-    media_nodes = first_chara['media']['nodes']
-    if len(media_nodes) <= 0:
+    media_ids = first_chara.media
+    if len(media_ids) <= 0:
         raise Exception('Media not found.')
 
-    media_node = media_nodes.pop(0)
-    media_id = media_node['id']
+    media_id = media_ids.pop(0)
     media = fetch_media(media_id)
-    logger.info('Fetched media: %s' % media)
+    logger.info('Fetched media: %s' % to_str(media))
 
-    chara_nodes = copy.copy(media['characters']['nodes'])
-    while len(chara_nodes) > 0:
-        chara_node = secrets.choice(chara_nodes)
-        chara_nodes.remove(chara_node)
-        chara_id = chara_node['id']
+    chara_ids = copy.copy(media.characters)
+    while len(chara_ids) > 0:
+        chara_id = secrets.choice(chara_ids)
+        chara_ids.remove(chara_id)
         # Avoid same character
-        if chara_id == first_chara['id']:
+        if chara_id == first_chara.id:
             continue
         second_chara = fetch_character(chara_id)
         if not validate_character(second_chara):
             continue
-        logger.info('Fetched second character: %s' % second_chara)
+        logger.info('Fetched second character: %s' % to_str(second_chara))
 
         characters = [first_chara, second_chara]
         media = [media]
@@ -99,17 +95,17 @@ def select_characters_by_media(media: dict) -> list:
     logger = create_logger(select_characters_by_media)
     if media is None:
         raise Exception('Media not found.')
-    logger.info('Fetched media: %s' % media)
+    logger.info('Fetched media: %s' % to_str(media))
 
-    chara_nodes = copy.copy(media['characters']['nodes'])
-    if chara_nodes is None:
+    chara_ids = copy.copy(media.characters)
+    if chara_ids is None:
         raise Exception('Characters not found.')
 
     selected_charas = []
-    while len(selected_charas) < 2 and len(chara_nodes) > 0:
-        chara_node = secrets.choice(chara_nodes)
-        chara_nodes.remove(chara_node)
-        chara = fetch_character(chara_node['id'])
+    while len(selected_charas) < 2 and len(chara_ids) > 0:
+        chara_id = secrets.choice(chara_ids)
+        chara_ids.remove(chara_id)
+        chara = fetch_character(chara_id)
         if not validate_character(chara):
             continue
         selected_charas.append(chara)
@@ -134,34 +130,33 @@ def select_media_by_characters(characters: list) -> list:
 
 
 def fetch_media_by_character(chara: dict) -> dict:
-    media_nodes = chara['media']['nodes']
-    if len(media_nodes) <= 0:
+    media_ids = chara.media
+    if len(media_ids) <= 0:
         return None
-    media_node = media_nodes.pop(0)
-    media_id = media_node['id']
+    media_id = media_ids.pop(0)
     return fetch_media(media_id)
 
 
-def validate_character(chara: dict) -> bool:
+def validate_character(chara: Character) -> bool:
     if chara is None:
         return False
     # Avoid no images
-    image_url = chara['image']['large']
+    image_url = chara.image_url
     if image_url is None or image_url.endswith('default.jpg'):
         return False
     return True
 
 
-def to_media(media: dict) -> Media:
-    return Media(title=media['title']['userPreferred'],
-                 url=media['siteUrl'])
+def to_str(obj) -> str:
+    return json.dumps(to_dict(obj))
 
 
-def to_character(chara: dict) -> Character:
-    return Character(first_name=chara['name']['first'],
-                     last_name=chara['name']['last'],
-                     image_url=chara['image']['large'],
-                     url=chara['siteUrl'])
+def to_dict(obj) -> dict:
+    if isinstance(obj, list):
+        return [to_dict(item) for item in obj]
+    elif isinstance(obj, tuple):
+        return obj._asdict()
+    return obj
 
 
 def create_caption(characters: list) -> str:
@@ -190,8 +185,11 @@ def create_character_name(character: Character) -> str:
 
 
 def create_media_comment(media_list: list) -> str:
-    media_set = set(media_list)
-    return '\r\n'.join(create_single_media_comment(media) for media in media_set)
+    # HACK: Since our namedtuple is unhashable, we use dict workaround
+    media_dict = {}
+    for media in media_list:
+        media_dict[media.id] = media
+    return '\r\n'.join(create_single_media_comment(media) for media in media_dict.values())
 
 
 def create_single_media_comment(media: Media) -> str:
