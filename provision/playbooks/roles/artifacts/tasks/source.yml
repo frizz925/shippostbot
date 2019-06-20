@@ -1,0 +1,26 @@
+- name: Removing staging directory
+  file: path={{ staging_dir }} state=absent
+- name: Listing tracked source files
+  shell: >-
+    git ls-tree -r --name-only master |
+    grep -E '.py$' |
+    grep -vE '^(tests/|main.py)'
+  args:
+    chdir: "{{ project_dir }}"
+  register: git_files
+  changed_when: false
+- name: Creating staging directories
+  file: path={{ staging_dir + '/' + item | dirname }} state=directory recurse=yes
+  with_items: "{{ git_files.stdout_lines | list }}"
+- name: Copying source files
+  copy: src={{ project_dir }}/{{ item }} dest={{ staging_dir }}/{{ item }}
+  with_items: "{{ git_files.stdout_lines | list }}"
+- name: Compiling bytecodes
+  shell: python3.7 -m compileall .
+  args:
+    chdir: "{{ staging_dir }}"
+- name: Archiving main program from staging directory
+  archive:
+    path: "{{ staging_dir }}/*"
+    dest: "{{ artifacts_dir }}/shippostbot.zip"
+    format: zip

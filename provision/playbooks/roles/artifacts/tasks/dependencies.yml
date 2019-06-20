@@ -1,0 +1,19 @@
+- name: Removing virtualenv directory
+  file: path={{ virtualenv_dir }} state=absent
+- name: Creating new staging environment
+  shell: "virtualenv -p $(which python3.7) {{ virtualenv_dir }}"
+- name: Installing dependencies into staging environment
+  shell: "{{ virtualenv_bin }}/pip install -r requirements.txt"
+  args:
+    chdir: "{{ project_dir }}"
+- name: Removing dependencies staging directory
+  file: path={{ staging_deps_dir }} state=absent
+- name: Creating new dependencies staging directory
+  file: path={{ staging_deps_dir }}/python state=directory recurse=yes
+- name: Copying dependencies into staging directory
+  synchronize: src={{ virtualenv_dir }}/lib dest={{ staging_deps_dir }}/python/
+- name: Archiving dependencies from staging environment into artifact
+  archive:
+    path: "{{ staging_deps_dir }}/*"
+    dest: "{{ artifacts_dir }}/shippostbot-deps.zip"
+    format: zip

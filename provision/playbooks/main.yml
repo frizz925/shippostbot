@@ -1,0 +1,6 @@
+- name: Build artifacts
+  hosts: localhost
+  roles:
+    - artifacts
+  tags:
+    - artifacts

@@ -1,0 +1,8 @@
+
+python_version: python3.7
+project_dir: "{{ playbook_dir }}/../.."
+artifacts_dir: "{{ playbook_dir }}/../artifacts"
+staging_dir: "{{ artifacts_dir }}/staging"
+staging_deps_dir: "{{ artifacts_dir }}/staging-deps"
+virtualenv_dir: "{{ artifacts_dir }}/staging-venv"
+virtualenv_bin: "{{ virtualenv_dir }}/bin"
