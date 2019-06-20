@@ -3,9 +3,16 @@ resource "aws_lambda_function" "shippostbot_lambda" {
   role = "${aws_iam_role.shippostbot_lambda_role.arn}"
   handler = "lambda_function.lambda_handler"
 
+  filename = "../artifacts/shippostbot.zip"
+  source_code_hash = "${filebase64sha256("../artifacts/shippostbot.zip")}"
+
   runtime = "python3.7"
   memory_size = 256
   timeout = 300
+
+  layers = [
+    "${aws_lambda_layer_version.shippostbot_dependencies.arn}"
+  ]
 
   environment {
     variables = {
@@ -21,6 +28,15 @@ resource "aws_lambda_function" "shippostbot_lambda" {
     Environment = "Production"
     Service = "Lambda"
   }
+}
+
+resource "aws_lambda_layer_version" "shippostbot_dependencies" {
+  layer_name = "ShippostBotDependencies"
+  compatible_runtimes = ["python3.7"]
+  license_info = "GPL-3.0-or-later"
+
+  filename = "../artifacts/shippostbot-deps.zip"
+  source_code_hash = "${filebase64sha256("../artifacts/shippostbot-deps.zip")}"
 }
 
 resource "aws_lambda_permission" "shippostbot_lambda_exec" {
