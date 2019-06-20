@@ -31,6 +31,15 @@ EXPECTED_ROOT = '''{
   }
 }'''
 
+EXPECTED_ALIAS = '''{
+  Page(page: 1, perPage: 1) {
+    Media: media {
+      id
+      media_title: title
+    }
+  }
+}'''
+
 
 def test_query():
     page_info = Fields('pageInfo', [
@@ -67,3 +76,16 @@ def test_root():
     ], alias='page')
     root = Root(page)
     assert str(root) == EXPECTED_ROOT
+
+
+def test_alias():
+    root = Root()
+    page = Query('Page', {
+        'page': 1,
+        'perPage': 1
+    }, Fields('media', [
+        'id',
+        Field('title', 'media_title')
+    ], alias='Media'))
+    root.add(page)
+    assert str(root) == EXPECTED_ALIAS
