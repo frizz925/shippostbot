@@ -1,8 +1,8 @@
 # ShippostBot
 
-![Travis (.org) branch](https://img.shields.io/travis/Frizz925/shippostbot/master.svg?style=flat-square)
-![Codecov branch](https://img.shields.io/codecov/c/gh/Frizz925/shippostbot/master.svg?style=flat-square)
-![GitHub](https://img.shields.io/github/license/Frizz925/shippostbot.svg?style=flat-square)
+[![Travis (.org) branch](https://img.shields.io/travis/Frizz925/shippostbot/master.svg?style=flat-square)](https://travis-ci.org/Frizz925/shippostbot)
+[![Codecov branch](https://img.shields.io/codecov/c/gh/Frizz925/shippostbot/master.svg?style=flat-square)](https://codecov.io/gh/Frizz925/shippostbot)
+[![GitHub](https://img.shields.io/github/license/Frizz925/shippostbot.svg?style=flat-square)](https://github.com/Frizz925/shippostbot/blob/master/LICENSE)
 
 Your friendly bot for pairing your favorite anime characters, [ShippostBot](https://www.facebook.com/ShippostBot/)
 
