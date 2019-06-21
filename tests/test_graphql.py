@@ -1,5 +1,3 @@
-import sys
-
 from shippostbot.graphql import Field, Fields, Query, Root
 
 EXPECTED_QUERY = '''query($id: Int, $page: Int, $perPage: Int, $search: String) {

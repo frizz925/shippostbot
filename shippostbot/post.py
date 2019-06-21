@@ -1,7 +1,6 @@
 import copy
 import json
 import secrets
-from collections import namedtuple
 from enum import Enum
 from multiprocessing.pool import ThreadPool
 

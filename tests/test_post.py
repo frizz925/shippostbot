@@ -1,5 +1,3 @@
-import sys
-
 from shippostbot.entities import Character, Media
 from shippostbot.post import (create_caption, create_character_name,
                               create_comment, select_media_by_characters)
