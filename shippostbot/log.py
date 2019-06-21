@@ -1,11 +1,10 @@
 import inspect
 import logging
-import os
 import sys
 
 CLOUDWATCH_ENABLED = False
-STDOUT_LEVEL = logging.INFO
-STDERR_LEVEL = logging.WARN
+LOGGING_LEVEL = logging.WARN
+
 
 def create_logger(obj) -> logging.Logger:
     if inspect.isclass(obj) or inspect.isfunction(obj):
@@ -25,13 +24,10 @@ def init_logger():
         fmt = '[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s'
         formatter = logging.Formatter(fmt, datefmt='%Y-%m-%d %H:%M:%S')
 
-    stdout = logging.StreamHandler(stream=sys.stdout)
-    stdout.setFormatter(formatter)
-    stdout.setLevel(STDOUT_LEVEL)
     stderr = logging.StreamHandler(stream=sys.stderr)
     stderr.setFormatter(formatter)
-    stderr.setLevel(STDERR_LEVEL)
+    stderr.setLevel(LOGGING_LEVEL)
 
     logger = logging.getLogger()
-    logger.setLevel(STDOUT_LEVEL)
-    logger.handlers = [stdout, stderr]
+    logger.setLevel(LOGGING_LEVEL)
+    logger.handlers = [stderr]

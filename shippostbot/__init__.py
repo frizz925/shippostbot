@@ -1,20 +1,22 @@
 import json
-import sys
+import logging
+import os
 from hashlib import sha1
 
-from requests import Response
-
-from . import image, log
+from . import log
 from .image import combine_images
 from .post import SelectionType, create_post
 from .social import Facebook
 from .storage import S3Bucket
 
 
-def main(region: str,
-         bucket_name: str,
-         access_token: str,
-         selection_type=None) -> Response:
+def main(region=None,
+         bucket_name=None,
+         access_token=None,
+         selection_type=None,
+         logging_level=None) -> dict:
+    if isinstance(logging_level, str):
+        log.LOGGING_LEVEL = getattr(logging, logging_level, log.LOGGING_LEVEL)
     log.init_logger()
     logger = log.create_logger(main)
 
@@ -23,6 +25,7 @@ def main(region: str,
     elif isinstance(selection_type, str):
         selection_type = getattr(SelectionType, selection_type, SelectionType.FROM_MEDIA)
     post = create_post(selection_type)
+
     if post is None:
         raise Exception('Can\'t create post!')
     logger.info('Post caption: ' + json.dumps(post.caption))
@@ -33,24 +36,38 @@ def main(region: str,
     m = sha1()
     m.update(image)
     image_name = '%s.png' % m.hexdigest()
+    image_url = None
 
-    s3_bucket = S3Bucket(region, bucket_name)
-    s3_object = s3_bucket.upload_blob(image_name, image)
-    image_url = s3_bucket.get_public_url(s3_object.key)
+    if region is not None and bucket_name is not None:
+        s3_bucket = S3Bucket(region, bucket_name)
+        s3_object = s3_bucket.upload_blob(image_name, image)
+        image_url = s3_bucket.get_public_url(s3_object.key)
 
-    fb = Facebook(access_token)
-    user = fb.get_user()
+        if access_token is not None:
+            fb = Facebook(access_token)
+            user = fb.get_user()
 
-    res = user.publish_photo(post.caption, image_url)
-    # Delete image immediately after publishing, even if it actually fails
-    s3_bucket.delete_object(s3_object.key)
-    res_json = res.json()
-    logger.info(res_json)
-    res.raise_for_status()
+            res = user.publish_photo(post.caption, image_url)
+            # Delete image immediately after publishing, even if it actually fails
+            s3_bucket.delete_object(s3_object.key)
+            res_json = res.json()
+            logger.info(res_json)
+            res.raise_for_status()
 
-    post_id = res_json['post_id']
-    res = fb.publish_comment(post_id, post.comment)
-    logger.info(res.json())
-    res.raise_for_status()
+            post_id = res_json['post_id']
+            res = fb.publish_comment(post_id, post.comment)
+            logger.info(res.json())
+            res.raise_for_status()
 
-    return res
+            return res.json()
+    else:
+        image_path = os.path.join(os.getcwd(), 'images', image_name)
+        with open(image_path, 'wb') as f:
+            f.write(image)
+        image_url = 'file://%s' % image_path
+
+    return {
+        'caption': post.caption,
+        'comment': post.comment,
+        'image_url': image_url,
+    }

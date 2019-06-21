@@ -13,6 +13,7 @@ def lambda_handler(event, context):
     bucket_name = os.environ.get('S3_BUCKET_NAME')
     access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
     selection_type = os.environ.get('SELECTION_TYPE')
+    logging_level = os.environ.get('LOGGING_LEVEL')
 
     is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
@@ -20,16 +21,18 @@ def lambda_handler(event, context):
         res = shippostbot.main(crypto.decrypt(region),
                                crypto.decrypt(bucket_name),
                                crypto.decrypt(access_token),
-                               crypto.decrypt(selection_type))
+                               crypto.decrypt(selection_type),
+                               crypto.decrypt(logging_level))
     else:
         res = shippostbot.main(region,
                                bucket_name,
                                access_token,
-                               selection_type)
+                               selection_type,
+                               logging_level)
 
     return {
         'statusCode': 200,
-        'data': res.json()
+        'data': res
     }
 
 
