@@ -18,7 +18,7 @@ class S3File(File):
 
     @property
     def public_url(self) -> str:
-        return self.storage.bucket.get_public_url(self.s3_object)
+        return self.storage.bucket.get_public_url(self.name)
 
 
 class S3Storage(Storage):
