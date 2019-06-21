@@ -66,7 +66,7 @@ def select_character_to_media() -> tuple:
 
     media_ids = first_chara.media
     if len(media_ids) <= 0:
-        raise Exception('Media not found.')
+        raise Exception('Media not found')
 
     media_id = media_ids.pop(0)
     media = fetch_media(media_id)
@@ -87,18 +87,18 @@ def select_character_to_media() -> tuple:
         characters = [first_chara, second_chara]
         media = [media]
         return (characters, media)
-    raise Exception('Characters not found.')
+    raise Exception('Characters not found')
 
 
 def select_characters_by_media(media: dict) -> list:
     logger = create_logger(select_characters_by_media)
     if media is None:
-        raise Exception('Media not found.')
+        raise Exception('Media not found')
     logger.info('Fetched media: %s' % to_str(media))
 
     chara_ids = copy.copy(media.characters)
     if chara_ids is None:
-        raise Exception('Characters not found.')
+        raise Exception('Characters not found')
 
     selected_charas = []
     while len(selected_charas) < 2 and len(chara_ids) > 0:
