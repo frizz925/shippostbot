@@ -1,14 +1,20 @@
 import os
 from multiprocessing.pool import ThreadPool
 from statistics import mean
+from typing import NamedTuple
 
 import requests
 from wand.color import Color
 from wand.display import display
 from wand.drawing import Drawing
-from wand.image import Image
+from wand.image import Image as WandImage
 
 DEBUG_IMAGE = False
+
+
+class Image(NamedTuple):
+    content: bytes
+    content_type: str
 
 
 class ImageResizer(object):
@@ -16,7 +22,7 @@ class ImageResizer(object):
         self.max_width = max_width
         self.max_height = max_height
 
-    def resize(self, img: Image, mult: float) -> Image:
+    def resize(self, img: WandImage, mult: float) -> WandImage:
         # No need to waste our resources for resizing by the same exact multiplier (1:1)
         if mult == 1.0:
             return img
@@ -41,17 +47,17 @@ class ImageResizer(object):
         return img
 
 
-def combine_images(*images_url: list) -> bytes:
+def combine_images(*images_url: list) -> Image:
     images = []
     with ThreadPool() as pool:
         images = pool.map(fetch_image, images_url)
 
-    images = [Image(blob=img) for img in images]
+    images = [WandImage(blob=img) for img in images]
     max_width = round(mean(img.width for img in images))
     max_height = round(mean(img.height for img in images))
     sum_width = max_width * len(images)
 
-    canvas = Image(width=sum_width, height=max_height)
+    canvas = WandImage(width=sum_width, height=max_height)
     resizer = ImageResizer(max_width, max_height)
 
     left = 0
@@ -83,7 +89,8 @@ def combine_images(*images_url: list) -> bytes:
         server_name = os.environ.get('DISPLAY', ':0')
         display(canvas, server_name=server_name)
 
-    return canvas.make_blob(format='png')
+    return Image(content=canvas.make_blob(format='png'),
+                 content_type='image/png')
 
 
 def fetch_image(image_url: str) -> bytes:
