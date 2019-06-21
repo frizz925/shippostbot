@@ -54,12 +54,20 @@ def main(region=None,
             logger.info(res_json)
             res.raise_for_status()
 
+            user_id = res_json['id']
             post_id = res_json['post_id']
+
             res = fb.publish_comment(post_id, post.comment)
-            logger.info(res.json())
+            res_json = res.json()
+            logger.info(res_json)
             res.raise_for_status()
 
-            return res.json()
+            comment_id = res_json['id']
+            return {
+                'user_id': user_id,
+                'post_id': post_id,
+                'comment_id': comment_id,
+            }
     else:
         image_path = os.path.join(os.getcwd(), 'images', image_name)
         with open(image_path, 'wb') as f:
