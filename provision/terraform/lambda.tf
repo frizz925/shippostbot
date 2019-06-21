@@ -17,7 +17,6 @@ resource "aws_lambda_function" "shippostbot_lambda" {
   environment {
     variables = {
       FACEBOOK_ACCESS_TOKEN = "${var.facebook_access_token}"
-      FACEBOOK_PAGE_ID = "${var.facebook_page_id}"
       S3_BUCKET_NAME = "${var.s3_bucket_name}"
       S3_REGION = "${var.aws_region}"
       SOCIAL_PUBLISHER = "FACEBOOK"
