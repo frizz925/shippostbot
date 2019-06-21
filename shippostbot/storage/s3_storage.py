@@ -41,7 +41,7 @@ class S3Storage(Storage):
              content: bytes,
              content_type='application/octet-stream') -> S3File:
         s3_object = self.bucket.upload_blob(key, content, content_type)
-        return S3File(self, s3_object, content, content_type)
+        return S3File(self, s3_object, content_type)
 
     def delete(self, name: str):
         self.bucket.delete_object(name)
