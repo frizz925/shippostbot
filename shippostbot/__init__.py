@@ -1,3 +1,4 @@
+import json
 import sys
 from hashlib import sha1
 
@@ -24,8 +25,8 @@ def main(region: str,
     post = create_post(selection_type)
     if post is None:
         raise Exception('Can\'t create post!')
-    logger.info('Post caption: ' + post.caption)
-    logger.info('Post comment: ' + post.comment)
+    logger.info('Post caption: ' + json.dumps(post.caption))
+    logger.info('Post comment: ' + json.dumps(post.comment))
 
     chara_images = [c.image_url for c in post.characters]
     image = combine_images(*chara_images)
