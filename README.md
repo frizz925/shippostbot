@@ -60,35 +60,25 @@ nosetests
 
 ### Using the bot
 
-Simply run the main script to start using the bot.
+An additional Python package is required to run the bot from command line.
 
 ```sh
-python main.py
+pip install click
 ```
 
-### Bot functionality levels
+After that, simply run the bot's package module to start using the bot.
 
-The bot has 3 levels of functionality:
-
-1. Creating caption, comment, and combined image
-2. Uploading combined image to an [AWS S3](https://aws.amazon.com/s3/) bucket
-3. Publishing post and comment to a Facebook page
-
-The available functionality is determined by the *environment variables*.
-
-The first level requires **no environment variables** and it will save the combined image locally along with the caption, comment, and image file url in a JSON format like the following:
-
-```json
-{
-    "caption": "Character A X Character B",
-    "comment": "<comment here>",
-    "image_url": "<locally saved image url here>"
-}
+```sh
+python -m shippostbot
 ```
 
-This is useful if you just need the simplest, working functionality of the bot, in which you have your own way of uploading the image and posting them to any places you'd like. This opens up opportunity of the bot being reusable not only as a Facebook bot, but also bot in any other form like Discord and Twitter bots.
+### Command line arguments
 
-(The second and third levels documentation is TBA for the moment)
+TBA
+
+### Environment variables
+
+TBA
 
 ## Deployment
 

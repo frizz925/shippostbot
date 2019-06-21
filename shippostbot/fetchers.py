@@ -1,5 +1,5 @@
 import secrets
-from collections import namedtuple
+from typing import List, NamedTuple, Type
 
 import requests
 
@@ -22,7 +22,7 @@ def fetch_random_character() -> Character:
                         fetch_character)
 
 
-def fetch_random(fn_total, fn_page_fetch, fn_fetch) -> namedtuple:
+def fetch_random(fn_total, fn_page_fetch, fn_fetch) -> Type[NamedTuple]:
     total = fn_total()
     page = secrets.randbelow(total)
     node = fn_page_fetch(page, 1).pop()
@@ -36,17 +36,14 @@ def fetch_media(media_id: int) -> Media:
         Fields('title', 'userPreferred'),
         Fields('characters', Fields('edges', Fields('node', 'id')))
     ])
-    return Media(id=res['id'],
-                 url=res['siteUrl'],
-                 title=res['title']['userPreferred'],
-                 characters=[edge['node']['id'] for edge in res['characters']['edges']])
+    return to_media(res)
 
 
 def fetch_media_total() -> int:
     return fetch_total(Fields('media', 'id'))
 
 
-def fetch_media_page(page: int, per_page: int) -> list:
+def fetch_media_page(page: int, per_page: int) -> List[dict]:
     return fetch_page(Fields('media', 'id'), page, per_page)
 
 
@@ -61,19 +58,14 @@ def fetch_character(chara_id: int) -> Character:
             'perPage': 1,
         }, Fields('edges', Fields('node', 'id')))
     ])
-    return Character(id=res['id'],
-                     first_name=res['name']['first'],
-                     last_name=res['name']['last'],
-                     image_url=res['image']['large'],
-                     url=res['siteUrl'],
-                     media=[edge['node']['id'] for edge in res['media']['edges']])
+    return to_character(res)
 
 
 def fetch_character_total() -> int:
     return fetch_total(Fields('characters', 'id'))
 
 
-def fetch_character_page(page: int, per_page: int) -> list:
+def fetch_character_page(page: int, per_page: int) -> List[dict]:
     return fetch_page(Fields('characters', 'id'), page, per_page)
 
 
@@ -99,7 +91,7 @@ def fetch_total(fields: Fields) -> int:
     return result['page']['pageInfo']['total']
 
 
-def fetch_page(fields: Fields, page: int, per_page: int) -> list:
+def fetch_page(fields: Fields, page: int, per_page: int) -> List[dict]:
     page = Query('Page', {'page': page, 'perPage': per_page}, fields, alias='page')
     root = Root(page)
     result = anilist_query(str(root))
@@ -108,7 +100,22 @@ def fetch_page(fields: Fields, page: int, per_page: int) -> list:
 
 
 def anilist_query(query: str, variables: dict = {}) -> dict:
-    res = requests.post(ANILIST_BASE_URL, json={
-        'query': query, 'variables': variables})
+    res = requests.post(ANILIST_BASE_URL, json={'query': query, 'variables': variables})
     res.raise_for_status()
     return res.json().get('data', {})
+
+
+def to_media(data: dict) -> Media:
+    return Media(id=data['id'],
+                 url=data['siteUrl'],
+                 title=data['title']['userPreferred'],
+                 characters=[edge['node']['id'] for edge in data['characters']['edges']])
+
+
+def to_character(data: dict) -> Character:
+    return Character(id=data['id'],
+                     first_name=data['name']['first'],
+                     last_name=data['name']['last'],
+                     image_url=data['image']['large'],
+                     url=data['siteUrl'],
+                     media=[edge['node']['id'] for edge in data['media']['edges']])

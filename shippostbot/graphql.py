@@ -1,3 +1,6 @@
+from typing import List
+
+
 class Schema(object):
     def pre_render(self, level=0) -> str:
         return self.render_indent(level)
@@ -85,7 +88,7 @@ class Query(Fields):
         return '%s: %s' % (key, value)
 
 
-def normalize_children(children) -> list:
+def normalize_children(children: any) -> List[Schema]:
     result = []
     if isinstance(children, list):
         for child in children:
@@ -95,7 +98,7 @@ def normalize_children(children) -> list:
     return result
 
 
-def attach_schema(children: list, schema):
+def attach_schema(children: List[Schema], schema: any):
     if isinstance(schema, str):
         schema = Field(schema)
     children.append(schema)

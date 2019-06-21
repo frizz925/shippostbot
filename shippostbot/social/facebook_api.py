@@ -1,16 +1,16 @@
+from __future__ import annotations
+
 from requests import Request, Response, Session
 
-from .log import create_logger
+from ..log import create_logger
 
-
-class FacebookUser(object):
-    pass
+DEFAULT_API_VERSION = 'v3.3'
 
 
 class Facebook(object):
     def __init__(self,
                  access_token: str,
-                 api_version: str = 'v3.3'):
+                 api_version=DEFAULT_API_VERSION):
         self.access_token = access_token
         self.api_version = api_version
         self.session = Session()

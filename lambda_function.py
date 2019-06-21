@@ -5,35 +5,45 @@ import boto3
 
 import shippostbot
 
+LAMBDA_ENVS = [
+    # AWS S3
+    'S3_REGION',
+    'S3_BUCKET_NAME',
+
+    # Facebook
+    'FACEBOOK_ACCESS_TOKEN',
+
+    # Misc
+    'SELECTION_TYPE',
+    'SOCIAL_PUBLISHER',
+    'STORAGE_TYPE',
+    'LOGGING_LEVEL',
+    'ENCRYPTED_ENV'
+]
+
 
 def lambda_handler(event, context):
-    shippostbot.log.CLOUDWATCH_ENABLED = True
-
-    region = os.environ.get('S3_REGION')
-    bucket_name = os.environ.get('S3_BUCKET_NAME')
-    access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
-    selection_type = os.environ.get('SELECTION_TYPE')
-    logging_level = os.environ.get('LOGGING_LEVEL')
+    shippostbot.set_cloudwatch(True)
 
     is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
-        crypto = CryptoHelper()
-        res = shippostbot.main(crypto.decrypt(region),
-                               crypto.decrypt(bucket_name),
-                               crypto.decrypt(access_token),
-                               crypto.decrypt(selection_type),
-                               crypto.decrypt(logging_level))
-    else:
-        res = shippostbot.main(region,
-                               bucket_name,
-                               access_token,
-                               selection_type,
-                               logging_level)
+        decrypt_envs()
 
+    shippostbot.setup_from_env()
+    res = shippostbot.main_from_env()
     return {
         'statusCode': 200,
         'data': res
     }
+
+
+def decrypt_envs():
+    crypto = CryptoHelper()
+    for name in LAMBDA_ENVS:
+        value = os.environ.get(name)
+        if value is None:
+            continue
+        os.environ[name] = crypto.decrypt(value)
 
 
 class CryptoHelper(object):
