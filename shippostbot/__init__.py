@@ -1,81 +1,72 @@
-import json
 import logging
 import os
-from hashlib import sha1
+from typing import Type
 
 from . import log
-from .image import combine_images
+from .photo import create_photo
 from .post import SelectionType, create_post
-from .social import Facebook
-from .storage import S3Bucket
+from .social import Facebook, Publishers
+from .social.abstracts import Publisher
+from .storage import S3Bucket, Storages
+from .storage.abstracts import Storage
 
 
-def main(region=None,
-         bucket_name=None,
-         access_token=None,
-         selection_type=None,
-         logging_level=None) -> dict:
-    if isinstance(logging_level, str):
-        log.LOGGING_LEVEL = getattr(logging, logging_level, log.LOGGING_LEVEL)
+def main_from_env() -> dict:
+    return main(os.environ.get('SELECTION_TYPE', ''),
+                os.environ.get('SOCIAL_PUBLISHER', ''),
+                os.environ.get('STORAGE_TYPE', ''))
+
+
+def main(selection_type: any,
+         publisher: any,
+         storage: any) -> dict:
     log.init_logger()
-    logger = log.create_logger(main)
-
-    if selection_type is None:
-        selection_type = SelectionType.FROM_MEDIA
-    elif isinstance(selection_type, str):
-        selection_type = getattr(SelectionType, selection_type, SelectionType.FROM_MEDIA)
+    selection_type = get_selection_type(selection_type)
+    publisher = get_publisher(publisher, storage)
     post = create_post(selection_type)
+    photo = create_photo(post)
+    return publisher.publish(photo)._asdict()
 
-    if post is None:
-        raise Exception('Can\'t create post!')
-    logger.info('Post caption: ' + json.dumps(post.caption))
-    logger.info('Post comment: ' + json.dumps(post.comment))
 
-    chara_images = [c.image_url for c in post.characters]
-    image = combine_images(*chara_images)
-    m = sha1()
-    m.update(image)
-    image_name = '%s.png' % m.hexdigest()
-    image_url = None
+def get_selection_type(selection_type: any) -> SelectionType:
+    if isinstance(selection_type, SelectionType):
+        return selection_type
+    return getattr(SelectionType, selection_type, SelectionType.FROM_CHARACTER_TO_MEDIA)
 
-    if region is not None and bucket_name is not None:
-        s3_bucket = S3Bucket(region, bucket_name)
-        s3_object = s3_bucket.upload_blob(image_name, image)
-        image_url = s3_bucket.get_public_url(s3_object.key)
 
-        if access_token is not None:
-            fb = Facebook(access_token)
-            user = fb.get_user()
+def get_publisher(publisher: any, storage: any) -> Type[Publisher]:
+    if isinstance(publisher, Publisher):
+        return publisher
 
-            res = user.publish_photo(post.caption, image_url)
-            # Delete image immediately after publishing, even if it actually fails
-            s3_bucket.delete_object(s3_object.key)
-            res_json = res.json()
-            logger.info(res_json)
-            res.raise_for_status()
+    storage = get_storage(storage)
+    publisher = getattr(Publishers, publisher, Publishers.STREAM)
+    if publisher == Publishers.FACEBOOK:
+        access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
+        facebook_api = Facebook(access_token)
+        return Publishers.FACEBOOK.value(facebook_api, storage)
+    return Publishers.STREAM.value(storage)
 
-            user_id = res_json['id']
-            post_id = res_json['post_id']
 
-            res = fb.publish_comment(post_id, post.comment)
-            res_json = res.json()
-            logger.info(res_json)
-            res.raise_for_status()
+def get_storage(storage: any) -> Type[Storage]:
+    if isinstance(storage, Storage):
+        return storage
+    storage = getattr(Storages, storage, Storages.TEMP_FILE)
+    if storage == Storages.AWS_S3:
+        region = os.environ.get('S3_REGION')
+        bucket_name = os.environ.get('S3_BUCKET_NAME')
+        bucket = S3Bucket(region, bucket_name, 'public-read')
+        return Storages.AWS_S3.value(bucket)
+    return Storages.TEMP_FILE.value()
 
-            comment_id = res_json['id']
-            return {
-                'user_id': user_id,
-                'post_id': post_id,
-                'comment_id': comment_id,
-            }
-    else:
-        image_path = os.path.join(os.getcwd(), 'images', image_name)
-        with open(image_path, 'wb') as f:
-            f.write(image)
-        image_url = 'file://%s' % image_path
 
-    return {
-        'caption': post.caption,
-        'comment': post.comment,
-        'image_url': image_url,
-    }
+def setup_from_env():
+    set_logging_level(os.environ.get('LOGGING_LEVEL', ''))
+
+
+def set_logging_level(logging_level: str):
+    logging_level = getattr(logging, logging_level, log.LOGGING_LEVEL)
+    log.LOGGING_LEVEL = logging_level
+
+
+def set_cloudwatch(enabled: bool):
+    log.CLOUDWATCH_ENABLED = enabled
