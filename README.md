@@ -46,25 +46,13 @@ pip install -r requirements.txt
 
 ### Testing
 
-Tests are done using [nose](https://nose.readthedocs.io/en/latest/). However, it is likely that different testing framework would be used should new test requirements arise in the future.
+Simply run the following command to see if the test cases pass successfully.
 
 ```sh
-pip install nose
-```
-
-You can then run the tests and see if the test cases pass successfully.
-
-```sh
-nosetests
+python -m unittest
 ```
 
 ### Using the bot
-
-An additional Python package is required to run the bot from command line.
-
-```sh
-pip install click
-```
 
 After that, simply run the bot's package module to start using the bot.
 
@@ -74,11 +62,31 @@ python -m shippostbot
 
 ### Command line arguments
 
-TBA
+```sh
+Options:
+  -t, --selection-type TEXT  Define how the bot selects the characters
+  -p, --publisher TEXT       Which publisher to use to publish the post
+  -s, --storage TEXT         Storage type to be used by the bot
+  --help                     Show this message and exit.
+```
 
 ### Environment variables
 
-TBA
+General environment variables
+
+| Variables                 | Description   |
+|---------------------------|---------------|
+| FACEBOOK_ACCESS_TOKEN     | Access token for Facebook Graph API |
+| S3_REGION                 | The region where the S3 bucket is located |
+| S3_BUCKET_NAME            | The name of the S3 bucket |
+
+"As a service" environment variables
+
+| Variables                 | Description   |
+|---------------------------|---------------|
+| STORAGE_TYPE              | Same as `--storage` option |
+| SELECTION_TYPE            | Same as `--selection-type` option |
+| SOCIAL_PUBLISHER          | Same as `--publisher` option |
 
 ## Deployment
 
