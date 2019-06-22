@@ -104,6 +104,7 @@ def anilist_query(query: str, variables: dict = {}) -> dict:
     session = REQUESTS_SESSION
     res = session.post(ANILIST_BASE_URL, json={'query': query, 'variables': variables})
     res.raise_for_status()
+    res.close()
     return res.json().get('data', {})
 
 
