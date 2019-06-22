@@ -1,7 +1,7 @@
 from base64 import b64encode
 from datetime import datetime, timedelta
 from hashlib import md5
-from typing import Union
+from typing import Optional, Union
 
 import boto3
 
@@ -28,14 +28,14 @@ class S3Bucket(object):
     def upload_blob(self,
                     key: str,
                     blob: bytes,
-                    content_type='application/octet-stream',
-                    acl=None) -> s3.Object:
+                    content_type: str = 'application/octet-stream',
+                    acl: Optional[str] = None) -> s3.Object:
         if acl is None:
             acl = self.acl
         expires = datetime.now() + self.expiry_delta
 
         self.logger.info('Putting object to S3, bucket: %s, key: %s, acl: %s, content-type: %s, expiry: %s' % (
-            self.bucket_name,
+            self.bucket.name,
             key,
             acl,
             content_type,
@@ -67,5 +67,5 @@ class S3Bucket(object):
     def get_public_url(self, key: str) -> str:
         scheme = 'https'
         host = 's3-%s.amazonaws.com' % self.region
-        path = '%s/%s' % (self.bucket_name, key)
+        path = '%s/%s' % (self.bucket.name, key)
         return '%s://%s/%s' % (scheme, host, path)
