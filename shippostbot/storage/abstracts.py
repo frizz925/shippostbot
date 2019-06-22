@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Type
+from typing import Optional, Type
 
 
 class File(object):
@@ -25,7 +25,9 @@ class File(object):
     def public_url(self) -> str:
         return None
 
-    def save(self, content: bytes, content_type=None) -> Type[File]:
+    def save(self,
+             content: bytes,
+             content_type: Optional[str] = None) -> Type[File]:
         if content_type is None:
             content_type = self.content_type
         return self.storage.save(self.name, content, content_type)
