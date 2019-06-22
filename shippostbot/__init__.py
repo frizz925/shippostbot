@@ -48,7 +48,7 @@ def get_publisher(publisher: Union[str, Type[Publisher]],
         access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
         facebook_api = Facebook(access_token)
         return Publishers.FACEBOOK.value(facebook_api, storage)
-    return Publishers.STREAM.value(storage)
+    return publisher.value(storage)
 
 
 def get_storage(storage: Union[str, Type[Storage]]) -> Type[Storage]:
@@ -60,7 +60,7 @@ def get_storage(storage: Union[str, Type[Storage]]) -> Type[Storage]:
         bucket_name = os.environ.get('S3_BUCKET_NAME')
         bucket = S3Bucket(region, bucket_name, 'public-read')
         return Storages.AWS_S3.value(bucket)
-    return Storages.TEMP_FILE.value()
+    return storage.value()
 
 
 def setup_from_env():
