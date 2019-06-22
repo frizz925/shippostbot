@@ -80,7 +80,7 @@ General environment variables
 | S3_REGION                 | The region where the S3 bucket is located |
 | S3_BUCKET_NAME            | The name of the S3 bucket |
 
-"As a service" environment variables
+Service environment variables
 
 | Variables                 | Description   |
 |---------------------------|---------------|
