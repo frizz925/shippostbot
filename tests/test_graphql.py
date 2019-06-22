@@ -64,7 +64,7 @@ class TestGraphQL(unittest.TestCase):
             '$perPage': 'Int',
             '$search': 'String'
         }, page)
-        assert str(query) == EXPECTED_QUERY
+        self.assertEqual(str(query), EXPECTED_QUERY)
 
     def test_root(self):
         page = Query('Page', {
@@ -75,7 +75,7 @@ class TestGraphQL(unittest.TestCase):
             Query('media', {'type': 'ANIME'}, 'id')
         ], alias='page')
         root = Root(page)
-        assert str(root) == EXPECTED_ROOT
+        self.assertEqual(str(root), EXPECTED_ROOT)
 
     def test_alias(self):
         root = Root()
@@ -87,7 +87,7 @@ class TestGraphQL(unittest.TestCase):
             Field('title', 'media_title')
         ], alias='Media'))
         root.add(page)
-        assert str(root) == EXPECTED_ALIAS
+        self.assertEqual(str(root), EXPECTED_ALIAS)
 
 
 if __name__ == '__main__':

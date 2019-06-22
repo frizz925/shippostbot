@@ -15,7 +15,7 @@ class TestPost(unittest.TestCase):
                               image_url=None,
                               url='',
                               media=[])
-        assert create_character_name(character) == 'Senomiya Akiho'
+        self.assertEqual(create_character_name(character), 'Senomiya Akiho')
 
         # Test with only first name
         character = Character(id=2,
@@ -24,7 +24,7 @@ class TestPost(unittest.TestCase):
                               image_url=None,
                               url='',
                               media=[])
-        assert create_character_name(character) == 'Haruka'
+        self.assertEqual(create_character_name(character), 'Haruka')
 
         # Test with only last name
         character = Character(id=3,
@@ -33,11 +33,11 @@ class TestPost(unittest.TestCase):
                               image_url=None,
                               url='',
                               media=[])
-        assert create_character_name(character) == 'Misaki'
+        self.assertEqual(create_character_name(character), 'Misaki')
 
     def test_create_caption(self):
         caption = create_caption(create_mock_characters_pair())
-        assert caption == 'Hiro x Zero Two'
+        self.assertEqual(caption, 'Hiro x Zero Two')
 
     def test_create_comment(self):
         media = create_mock_media()
@@ -49,12 +49,12 @@ Zero Two: https://anilist.co/character/124381/Zero-Two
 
 Source(s):
 Darling in the Franxx: https://anilist.co/anime/99423/Darling-in-the-Franxx/'''
-        assert comment == expected.replace('\n', '\r\n')
+        self.assertEqual(comment, expected.replace('\n', '\r\n'))
 
         # Media with the same titles should only be written once
         media.extend(create_mock_media())
         comment = create_comment(characters, media)
-        assert comment == expected.replace('\n', '\r\n')
+        self.assertEqual(comment, expected.replace('\n', '\r\n'))
 
     def test_select_media_by_characters(self):
         characters = [
@@ -63,10 +63,10 @@ Darling in the Franxx: https://anilist.co/anime/99423/Darling-in-the-Franxx/'''
             mock_character(9253, 10863, 11577)
         ]
         media = select_media_by_characters(characters)
-        assert len(media) == 3
-        assert media[0].title == 'Re:Zero kara Hajimeru Isekai Seikatsu'
-        assert media[1].title == 'Re:Zero kara Hajimeru Isekai Seikatsu'
-        assert media[2].title == 'Steins;Gate'
+        self.assertEqual(len(media), 3)
+        self.assertEqual(media[0].title, 'Re:Zero kara Hajimeru Isekai Seikatsu')
+        self.assertEqual(media[1].title, 'Re:Zero kara Hajimeru Isekai Seikatsu')
+        self.assertEqual(media[2].title, 'Steins;Gate')
 
 
 def create_mock_characters_pair() -> List[Character]:
