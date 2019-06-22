@@ -1,3 +1,4 @@
+import os
 import unittest
 import uuid
 
@@ -9,6 +10,13 @@ from shippostbot.storage.s3_api import S3Bucket
 
 @mock_s3
 class TestS3API(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        os.environ['AWS_ACCESS_KEY_ID'] = 'testing'
+        os.environ['AWS_SECRET_ACCESS_KEY'] = 'testing'
+        os.environ['AWS_SECURITY_TOKEN'] = 'testing'
+        os.environ['AWS_SESSION_TOKEN'] = 'testing'
+
     def setUp(self):
         region = 'ap-southeast-1'
         bucket_name = 'mock-bucket-' + uuid.uuid4().hex
