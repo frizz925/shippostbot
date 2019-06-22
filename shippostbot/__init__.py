@@ -2,7 +2,7 @@ import logging
 import os
 from typing import Type, Union
 
-from . import log
+from . import image, log
 from .photo import create_photo
 from .post import SelectionType, create_post
 from .social import Facebook, Publishers
@@ -23,7 +23,10 @@ def main(selection_type: Union[str, SelectionType],
     log.init_logger()
     selection_type = get_selection_type(selection_type)
     publisher = get_publisher(publisher, storage)
+
     post = create_post(selection_type)
+    if post is None:
+        raise Exception('Unable to create post!')
     photo = create_photo(post)
     return publisher.publish(photo)._asdict()
 
@@ -71,3 +74,6 @@ def set_logging_level(logging_level: str):
 
 def set_cloudwatch(enabled: bool):
     log.CLOUDWATCH_ENABLED = enabled
+
+
+__all__ = ['image', 'log']
