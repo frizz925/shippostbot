@@ -1,7 +1,7 @@
 import os
 from multiprocessing.pool import ThreadPool
 from statistics import mean
-from typing import NamedTuple
+from typing import List, NamedTuple, Union
 
 import requests
 from wand.color import Color
@@ -47,12 +47,10 @@ class ImageResizer(object):
         return img
 
 
-def combine_images(*images_url: list) -> Image:
-    images = []
+def combine_images(*images: List[Union[str, bytes, WandImage]]) -> Image:
     with ThreadPool() as pool:
-        images = pool.map(fetch_image, images_url)
+        images = pool.map(normalize_image, images)
 
-    images = [WandImage(blob=img) for img in images]
     max_width = round(mean(img.width for img in images))
     max_height = round(mean(img.height for img in images))
     sum_width = max_width * len(images)
@@ -85,12 +83,20 @@ def combine_images(*images_url: list) -> Image:
         draw(canvas)
         left += img.width
 
-    if DEBUG_IMAGE:
+    if DEBUG_IMAGE:  # pragma: no cover
         server_name = os.environ.get('DISPLAY', ':0')
         display(canvas, server_name=server_name)
 
     return Image(content=canvas.make_blob(format='png'),
                  content_type='image/png')
+
+
+def normalize_image(image: Union[str, bytes, WandImage]) -> WandImage:
+    if isinstance(image, str):
+        image = fetch_image(image)
+    if isinstance(image, bytes):
+        return WandImage(blob=image)
+    return image
 
 
 def fetch_image(image_url: str) -> bytes:

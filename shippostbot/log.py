@@ -9,10 +9,10 @@ LOGGING_LEVEL = logging.WARN
 def create_logger(obj) -> logging.Logger:
     if inspect.isclass(obj) or inspect.isfunction(obj):
         name = obj.__name__
-    elif isinstance(obj, object):
-        name = obj.__class__.__name__
-    else:
+    elif isinstance(obj, str):
         name = obj
+    else:
+        name = obj.__class__.__name__
     return logging.getLogger(name)
 
 

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Type, Union
 
 
 class Schema(object):
@@ -16,10 +16,10 @@ class Schema(object):
 
 
 class Root(Schema):
-    def __init__(self, children=[]):
+    def __init__(self, children: Union[str, list, Type[Schema]] = []):
         self.children = normalize_children(children)
 
-    def add(self, schema):
+    def add(self, schema: Union[str, Type[Schema]]):
         attach_schema(self.children, schema)
 
     def render(self, level=0) -> str:
@@ -33,7 +33,9 @@ class Root(Schema):
 
 
 class Field(Schema):
-    def __init__(self, name: str, alias=None):
+    def __init__(self,
+                 name: str,
+                 alias: Optional[str] = None):
         self.name = name
         self.alias = alias
 
@@ -50,8 +52,8 @@ class Field(Schema):
 class Fields(Root):
     def __init__(self,
                  name: str,
-                 children=[],
-                 alias=None):
+                 children: Union[str, list, Type[Schema]] = [],
+                 alias: Optional[str] = None):
         Root.__init__(self, children)
         self.name = name
         self.alias = alias
@@ -70,8 +72,8 @@ class Query(Fields):
     def __init__(self,
                  name: str,
                  params: dict,
-                 children=[],
-                 alias=None):
+                 children: Union[str, list, Type[Schema]] = [],
+                 alias: Optional[str] = None):
         Fields.__init__(self, name, children, alias)
         self.params = params
 
@@ -88,7 +90,7 @@ class Query(Fields):
         return '%s: %s' % (key, value)
 
 
-def normalize_children(children: any) -> List[Schema]:
+def normalize_children(children: Union[str, list, Type[Schema]]) -> List[Type[Schema]]:
     result = []
     if isinstance(children, list):
         for child in children:
@@ -98,7 +100,8 @@ def normalize_children(children: any) -> List[Schema]:
     return result
 
 
-def attach_schema(children: List[Schema], schema: any):
+def attach_schema(children: List[Type[Schema]],
+                  schema: Union[str, Type[Schema]]):
     if isinstance(schema, str):
         schema = Field(schema)
     children.append(schema)

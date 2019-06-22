@@ -1,8 +1,8 @@
 import logging
 import os
-from typing import Type
+from typing import Type, Union
 
-from . import log
+from . import image, log
 from .photo import create_photo
 from .post import SelectionType, create_post
 from .social import Facebook, Publishers
@@ -17,24 +17,28 @@ def main_from_env() -> dict:
                 os.environ.get('STORAGE_TYPE', ''))
 
 
-def main(selection_type: any,
-         publisher: any,
-         storage: any) -> dict:
+def main(selection_type: Union[str, SelectionType],
+         publisher: Union[str, Type[Publisher]],
+         storage: Union[str, Type[Storage]]) -> dict:
     log.init_logger()
     selection_type = get_selection_type(selection_type)
     publisher = get_publisher(publisher, storage)
+
     post = create_post(selection_type)
+    if post is None:
+        raise Exception('Unable to create post!')
     photo = create_photo(post)
     return publisher.publish(photo)._asdict()
 
 
-def get_selection_type(selection_type: any) -> SelectionType:
+def get_selection_type(selection_type: Union[str, SelectionType]) -> SelectionType:
     if isinstance(selection_type, SelectionType):
         return selection_type
     return getattr(SelectionType, selection_type, SelectionType.FROM_CHARACTER_TO_MEDIA)
 
 
-def get_publisher(publisher: any, storage: any) -> Type[Publisher]:
+def get_publisher(publisher: Union[str, Type[Publisher]],
+                  storage: Union[str, Type[Storage]]) -> Type[Publisher]:
     if isinstance(publisher, Publisher):
         return publisher
 
@@ -47,7 +51,7 @@ def get_publisher(publisher: any, storage: any) -> Type[Publisher]:
     return Publishers.STREAM.value(storage)
 
 
-def get_storage(storage: any) -> Type[Storage]:
+def get_storage(storage: Union[str, Type[Storage]]) -> Type[Storage]:
     if isinstance(storage, Storage):
         return storage
     storage = getattr(Storages, storage, Storages.TEMP_FILE)
@@ -70,3 +74,6 @@ def set_logging_level(logging_level: str):
 
 def set_cloudwatch(enabled: bool):
     log.CLOUDWATCH_ENABLED = enabled
+
+
+__all__ = ['image', 'log']
