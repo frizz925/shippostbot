@@ -3,7 +3,8 @@ from typing import List
 
 from shippostbot.entities import Character, Media
 from shippostbot.post import (create_caption, create_character_name,
-                              create_comment, select_media_by_characters)
+                              create_comment, select_characters_by_media,
+                              validate_character)
 
 
 class TestPost(unittest.TestCase):
@@ -56,17 +57,18 @@ Darling in the Franxx: https://anilist.co/anime/99423/Darling-in-the-Franxx/'''
         comment = create_comment(characters, media)
         self.assertEqual(comment, expected.replace('\n', '\r\n'))
 
-    def test_select_media_by_characters(self):
-        characters = [
-            mock_character(21355, 104454),
-            mock_character(21355),
-            mock_character(9253, 10863, 11577)
-        ]
-        media = select_media_by_characters(characters)
-        self.assertEqual(len(media), 3)
-        self.assertEqual(media[0].title, 'Re:Zero kara Hajimeru Isekai Seikatsu')
-        self.assertEqual(media[1].title, 'Re:Zero kara Hajimeru Isekai Seikatsu')
-        self.assertEqual(media[2].title, 'Steins;Gate')
+    def test_validate_character(self):
+        self.assertFalse(validate_character(None))
+
+    def test_select_characters_by_media(self):
+        with self.assertRaisesRegex(Exception, 'Media not found'):
+            select_characters_by_media(None)
+        with self.assertRaisesRegex(Exception, 'Characters not found'):
+            media = Media(id='',
+                          title='',
+                          url='',
+                          characters=None)
+            select_characters_by_media(media)
 
 
 def create_mock_characters_pair() -> List[Character]:
@@ -93,13 +95,11 @@ def create_mock_media() -> List[Media]:
     return [media]
 
 
-def mock_character(*media_ids: List[str]) -> Character:
-    return Character(id=None,
-                     first_name=None,
-                     last_name=None,
-                     image_url=None,
-                     url=None,
-                     media=list(media_ids))
+def mock_media(*chara_ids: List[int]) -> Media:
+    return Media(id=0,
+                 title='Mock Media',
+                 url='http://example.org',
+                 characters=chara_ids)
 
 
 if __name__ == '__main__':
