@@ -1,50 +1,37 @@
 import unittest
+import uuid
 
 import boto3
-from botocore import stub
+from moto import mock_s3
 
 from shippostbot.storage.s3_api import S3Bucket
 
 
+@mock_s3
 class TestS3API(unittest.TestCase):
     def setUp(self):
-        s3 = boto3.resource('s3')
-        stubber = stub.Stubber(s3.meta.client)
+        region = 'ap-southeast-1'
+        bucket_name = 'mock-bucket-' + uuid.uuid4().hex
+        s3 = boto3.resource('s3', region_name=region)
+        s3.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={
+            'LocationConstraint': region
+        })
+        s3_bucket = s3.Bucket(bucket_name)
 
         self.s3 = s3
-        self.region = 'ap-southeast-1'
-        self.s3_bucket = s3.Bucket('mock-bucket')
+        self.region = region
+        self.s3_bucket = s3_bucket
         self.bucket = S3Bucket(self.region, self.s3_bucket)
-        self.stubber = stubber
 
-    def test_get_object(self):
-        self.stubber.activate()
-        obj = self.bucket.get_object('mock-object')
-        self.assertEqual('mock-object', obj.key)
+    def test_api(self):
+        obj = self.bucket.upload_blob('mock-key', b'')
+        self.assertEqual('mock-key', obj.key)
 
-    def test_upload_blob(self):
-        expected_params = {
-            'ACL': 'private',
-            'Body': b'',
-            'Bucket': self.s3_bucket.name,
-            'ContentLength': 0,
-            'ContentMD5': stub.ANY,
-            'ContentType': 'application/octet-stream',
-            'Expires': stub.ANY,
-            'Key': 'mock-blob',
-        }
-        self.stubber.add_response('put_object', {}, expected_params)
-        self.stubber.activate()
+        obj = self.bucket.get_object(obj.key)
+        self.assertEqual('mock-key', obj.key)
 
-        obj = self.bucket.upload_blob(expected_params['Key'],
-                                      expected_params['Body'],
-                                      expected_params['ContentType'])
-        self.assertEqual(expected_params['Key'], obj.key)
-
-    def test_get_public_url(self):
-        key = 'mock-key'
-        expected_url = 'https://s3-%s.amazonaws.com/%s/%s' % (self.region, self.s3_bucket.name, key)
-        self.assertEqual(expected_url, self.bucket.get_public_url(key))
+        expected_url = 'https://s3-%s.amazonaws.com/%s/%s' % (self.region, self.s3_bucket.name, obj.key)
+        self.assertEqual(expected_url, self.bucket.get_public_url(obj.key))
 
 
 if __name__ == '__main__':
