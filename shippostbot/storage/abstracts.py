@@ -40,7 +40,7 @@ class File(object):
         storage.delete_file(self)
 
 
-class Storage(ABC):
+class Storage(ABC):  # pragma: no cover
     @property
     def is_public(self):
         return False

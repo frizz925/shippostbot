@@ -19,10 +19,10 @@ ARGV_MAPPING = ['selection_type', 'social_publisher', 'storage_type']
               default='TEMP_FILE',
               help='Storage type to be used by the bot')
 def main_runner(**kwargs):
-    try:
+    try:  # pragma: no cover
         from dotenv import load_dotenv, find_dotenv
         load_dotenv(find_dotenv())
-    except ImportError:
+    except ImportError:  # pragma: no cover
         pass
 
     setup_from_env()
@@ -32,5 +32,5 @@ def main_runner(**kwargs):
     sys.stdout.flush()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main_runner()
