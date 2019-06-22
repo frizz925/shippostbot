@@ -10,10 +10,11 @@ DEFAULT_API_VERSION = 'v3.3'
 class Facebook(object):
     def __init__(self,
                  access_token: str,
-                 api_version=DEFAULT_API_VERSION):
+                 api_version: str = DEFAULT_API_VERSION,
+                 session: Session = None):
         self.access_token = access_token
         self.api_version = api_version
-        self.session = Session()
+        self.session = session if session is not None else Session()
         self.logger = create_logger(Facebook)
 
     def get_endpoint(self) -> str:

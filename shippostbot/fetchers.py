@@ -8,6 +8,7 @@ from .graphql import Fields, Query, Root
 from .log import create_logger
 
 ANILIST_BASE_URL = 'https://graphql.anilist.co'
+REQUESTS_SESSION = requests.Session()
 
 
 def fetch_random_media() -> Media:
@@ -100,7 +101,8 @@ def fetch_page(fields: Fields, page: int, per_page: int) -> List[dict]:
 
 
 def anilist_query(query: str, variables: dict = {}) -> dict:
-    res = requests.post(ANILIST_BASE_URL, json={'query': query, 'variables': variables})
+    session = REQUESTS_SESSION
+    res = session.post(ANILIST_BASE_URL, json={'query': query, 'variables': variables})
     res.raise_for_status()
     return res.json().get('data', {})
 

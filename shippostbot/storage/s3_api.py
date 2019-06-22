@@ -1,6 +1,7 @@
 from base64 import b64encode
 from datetime import datetime, timedelta
 from hashlib import md5
+from typing import Union
 
 import boto3
 
@@ -12,13 +13,12 @@ s3 = boto3.resource('s3')
 class S3Bucket(object):
     def __init__(self,
                  region: str,
-                 bucket_name: str,
+                 bucket: Union[str, s3.Bucket],
                  acl='private'):
         self.region = region
-        self.bucket_name = bucket_name
         self.acl = acl
 
-        self.bucket = s3.Bucket(bucket_name)
+        self.bucket = s3.Bucket(bucket) if isinstance(bucket, str) else bucket
         self.expiry_delta = timedelta(hours=1)
         self.logger = create_logger(S3Bucket)
 
