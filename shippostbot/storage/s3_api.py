@@ -22,6 +22,10 @@ class S3Bucket(object):
         self.expiry_delta = timedelta(hours=1)
         self.logger = create_logger(S3Bucket)
 
+    @property
+    def bucket_name(self) -> str:
+        return self.bucket.name
+
     def get_object(self, key: str) -> s3.Object:
         return self.bucket.Object(key)
 
