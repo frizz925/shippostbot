@@ -16,7 +16,7 @@ def create_logger(obj) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def init_logger():
+def init_logger():  # pragma: no cover
     if CLOUDWATCH_ENABLED:
         fmt = '[%(name)s] [%(levelname)s] %(message)s'
         formatter = logging.Formatter(fmt)
