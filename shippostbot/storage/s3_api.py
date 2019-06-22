@@ -54,7 +54,7 @@ class S3Bucket(object):
 
     def delete_object(self, key: str) -> dict:
         self.logger.info('Deleting object from S3, bucket: %s, key: %s' % (
-            self.bucket_name,
+            self.bucket.name,
             key
         ))
         return self.bucket.Object(key).delete()
