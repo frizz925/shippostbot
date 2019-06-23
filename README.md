@@ -80,14 +80,6 @@ General environment variables
 | S3_REGION                 | The region where the S3 bucket is located |
 | S3_BUCKET_NAME            | The name of the S3 bucket |
 
-Service environment variables
-
-| Variables                 | Description   |
-|---------------------------|---------------|
-| STORAGE_TYPE              | Same as `--storage` option |
-| SELECTION_TYPE            | Same as `--selection-type` option |
-| SOCIAL_PUBLISHER          | Same as `--publisher` option |
-
 ## Deployment
 
 TBA
