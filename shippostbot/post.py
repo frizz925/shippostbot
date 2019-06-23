@@ -3,6 +3,7 @@ import json
 import secrets
 from enum import Enum
 from multiprocessing.pool import ThreadPool
+from typing import Union
 
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
@@ -193,3 +194,9 @@ def create_media_comment(media_list: list) -> str:
 
 def create_single_media_comment(media: Media) -> str:
     return '%s: %s' % (media.title, media.url)
+
+
+def get_selection_type(selection_type: Union[str, SelectionType]) -> SelectionType:
+    if isinstance(selection_type, SelectionType):
+        return selection_type
+    return getattr(SelectionType, selection_type, SelectionType.FROM_CHARACTER_TO_MEDIA)
