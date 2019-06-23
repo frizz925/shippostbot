@@ -30,7 +30,9 @@ def lambda_handler(event, context):
         decrypt_envs()
 
     shippostbot.setup_from_env()
-    res = shippostbot.main_from_env()
+    res = shippostbot.main(event['selection_type'],
+                           event['publisher'],
+                           event['storage'])
     return {
         'statusCode': 200,
         'data': res
