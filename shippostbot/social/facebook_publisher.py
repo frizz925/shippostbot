@@ -48,18 +48,18 @@ class FacebookPublisher(Publisher):
         self.storage = storage
 
     def publish(self, photo: Photo) -> FacebookPublishing:
-        if self.publish_style == FacebookPublishStyle.POST_AND_COMMENT:
-            post = self.publish_photo(photo)
-            comment = self.publish_comment(post.id, photo.comment)
-            return FacebookPublishing(user_id=post.user_id,
-                                      post_id=post.id,
-                                      comment_id=comment.id)
-        else:
+        if self.publish_style == FacebookPublishStyle.POST_ONLY:
             caption = '%s\r\n\r\n%s' % (photo.caption, photo.comment)
             post = self.publish_photo(photo, caption)
             return FacebookPublishing(user_id=post.user_id,
                                       post_id=post.id,
                                       comment_id=None)
+        else:
+            post = self.publish_photo(photo)
+            comment = self.publish_comment(post.id, photo.comment)
+            return FacebookPublishing(user_id=post.user_id,
+                                      post_id=post.id,
+                                      comment_id=comment.id)
 
     def publish_photo(self,
                       photo: Photo,
