@@ -20,6 +20,7 @@ LAMBDA_ENVS = [
 
     # Facebook
     'FACEBOOK_ACCESS_TOKEN',
+    'FACEBOOK_PUBLISH_STYLE',
 
     # Misc
     'SELECTION_TYPE',

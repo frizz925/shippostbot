@@ -20,6 +20,7 @@ resource "aws_lambda_function" "shippostbot_lambda" {
       S3_REGION = "${var.aws_region}"
       EVENT_FACEBOOK_ARN = "${aws_cloudwatch_event_rule.shippostbot_facebook_scheduler.arn}"
       FACEBOOK_ACCESS_TOKEN = "${var.facebook_access_token}"
+      FACEBOOK_PUBLISH_STYLE = "${var.facebook_publish_style}"
       LOGGING_LEVEL = "${var.logging_level}"
     }
   }

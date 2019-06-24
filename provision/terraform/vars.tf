@@ -2,6 +2,11 @@ variable "facebook_access_token" {
   type = "string"
 }
 
+variable "facebook_publish_style" {
+  type = "string"
+  default = "POST_AND_COMMENT"
+}
+
 variable "s3_bucket_name" {
   type = "string"
   default = "shippostbot"
