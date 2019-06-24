@@ -2,8 +2,9 @@ import unittest
 from typing import List
 
 from shippostbot.entities import Character, Media
-from shippostbot.post import (create_caption, create_character_name,
-                              create_comment, select_characters_by_media,
+from shippostbot.post import (SelectionType, create_caption,
+                              create_character_name, create_comment,
+                              get_selection_type, select_characters_by_media,
                               validate_character)
 
 
@@ -69,6 +70,11 @@ Darling in the Franxx: https://anilist.co/anime/99423/Darling-in-the-Franxx/'''
                           url='',
                           characters=None)
             select_characters_by_media(media)
+
+    def test_get_selection_type(self):
+        media_type = SelectionType.FROM_MEDIA
+        selection_type = get_selection_type(media_type)
+        self.assertEqual(selection_type, media_type)
 
 
 def create_mock_characters_pair() -> List[Character]:
