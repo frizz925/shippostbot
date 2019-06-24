@@ -44,12 +44,12 @@ resource "aws_lambda_permission" "shippostbot_lambda_exec" {
   action = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.shippostbot_lambda.function_name}"
   principal = "events.amazonaws.com"
-  source_arn = "${aws_cloudwatch_event_rule.shippostbot_scheduler.arn}"
+  source_arn = "${aws_cloudwatch_event_rule.shippostbot_facebook_scheduler.arn}"
 }
 
 resource "aws_cloudwatch_event_target" "shippostbot_lambda_event" {
   target_id = "ShippostBotExecutionEvent"
-  rule = "${aws_cloudwatch_event_rule.shippostbot_scheduler.name}"
+  rule = "${aws_cloudwatch_event_rule.shippostbot_facebook_scheduler.name}"
   arn = "${aws_lambda_function.shippostbot_lambda.arn}"
 }
 
