@@ -47,26 +47,12 @@ def lambda_handler(event: dict, context: any) -> dict:
 
 def exec_resource(selection_type: Union[str, SelectionType],
                   resource: str) -> dict:
-    logger = create_logger(exec_resource)
-    status = 'SUCCESS'
-    result = None
-    error = None
-    try:
-        if resource == 'ShippostBotFacebookScheduler':
-            result = main(selection_type,
-                          Publishers.FACEBOOK,
-                          Storages.AWS_S3)
-        else:
-            raise Exception('Unknown event resource: %s' % resource)
-    except Exception as e:
-        status = 'FAILED'
-        error = str(e)
-        logger.exception(error)
-    return {
-        'status': status,
-        'result': result,
-        'error': error,
-    }
+    if resource == 'ShippostBotFacebookScheduler':
+        return main(selection_type,
+                    Publishers.FACEBOOK,
+                    Storages.AWS_S3)
+    else:
+        raise Exception('Unknown event resource: %s' % resource)
 
 
 def decrypt_envs():
