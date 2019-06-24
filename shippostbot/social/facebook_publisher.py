@@ -44,25 +44,26 @@ class FacebookPublisher(Publisher):
 
     def publish_photo(self, photo: Photo) -> FacebookPost:
         f = upload_photo(self.storage, photo)
-        self.logger.info('publish_photo() start, ' +
-                         'caption: "' + photo.caption +
-                         '", image_url: "' + f.public_url +
-                         '", content_type: "' + photo.image.content_type + '"')
+        self.logger.info(
+            'publish_photo() start, caption: "%s", image_url: "%s", content_type: "%s"' %
+            (photo.caption, f.public_url, photo.image.content_type)
+        )
         res = self.user_api.publish_photo(photo.caption, f.public_url)
         f.delete()
         res_json = res.json()
-        self.logger.info('publish_photo() result: ' + res_json)
+        self.logger.info('publish_photo() result %s' % res_json)
         res.raise_for_status()
         return FacebookPost(id=res_json['post_id'],
                             user_id=res_json['id'])
 
     def publish_comment(self, post_id: str, content: str) -> FacebookComment:
-        self.logger.info('publish_comment() start, ' +
-                         'post_id: "' + post_id +
-                         '", content: "' + content + '"')
+        self.logger.info(
+            'publish_comment() start, post_id: "%s", content: "%s"' %
+            (post_id, content)
+        )
         res = self.api.publish_comment(post_id, content)
         res_json = res.json()
-        self.logger.info('publish_comment() result: ' + res_json)
+        self.logger.info('publish_comment() result: %s' % res_json)
         res.raise_for_status()
         return FacebookComment(id=res_json['id'],
                                post_id=post_id)
