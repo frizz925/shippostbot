@@ -6,7 +6,6 @@ from typing import Union
 import boto3
 
 from shippostbot import main, set_cloudwatch, setup_from_env
-from shippostbot.log import create_logger
 from shippostbot.post import SelectionType
 from shippostbot.social import Publishers
 from shippostbot.storage import Storages
@@ -15,6 +14,9 @@ LAMBDA_ENVS = [
     # AWS S3
     'S3_REGION',
     'S3_BUCKET_NAME',
+
+    # AWS CloudWatch Events,
+    'EVENT_FACEBOOK_ARN',
 
     # Facebook
     'FACEBOOK_ACCESS_TOKEN',
@@ -47,7 +49,7 @@ def lambda_handler(event: dict, context: any) -> dict:
 
 def exec_resource(selection_type: Union[str, SelectionType],
                   resource: str) -> dict:
-    if resource == 'ShippostBotFacebookScheduler':
+    if resource == os.environ.get('EVENT_FACEBOOK_ARN'):
         return main(selection_type,
                     Publishers.FACEBOOK,
                     Storages.AWS_S3)

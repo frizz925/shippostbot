@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_event_rule" "shippostbot_scheduler" {
+resource "aws_cloudwatch_event_rule" "shippostbot_facebook_scheduler" {
   name = "ShippostBotFacebookScheduler"
   description = "The default posting schedule"
   schedule_expression = "cron(0/30 * * * ? *)"
