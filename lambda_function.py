@@ -3,7 +3,10 @@ from base64 import b64decode
 
 import boto3
 
-import shippostbot
+from shippostbot import main, set_cloudwatch, setup_from_env
+from shippostbot.post import SelectionType
+from shippostbot.social import Publishers
+from shippostbot.storage import Storages
 
 LAMBDA_ENVS = [
     # AWS S3
@@ -23,19 +26,27 @@ LAMBDA_ENVS = [
 
 
 def lambda_handler(event, context):
-    shippostbot.set_cloudwatch(True)
-
+    set_cloudwatch(True)
     is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
         decrypt_envs()
 
-    shippostbot.setup_from_env()
-    res = shippostbot.main(event['selection_type'],
-                           event['publisher'],
-                           event['storage'])
+    setup_from_env()
+    selection_type = os.environ.get('SELECTION_TYPE',
+                                    SelectionType.FROM_CHARACTER_TO_MEDIA)
+    result = []
+    for resource in event.get('resources', []):
+        if resource == 'ShippostBotFacebookScheduler':
+            result.append(main(selection_type,
+                               Publishers.FACEBOOK,
+                               Storages.AWS_S3))
+        else:
+            result.append({
+                'error': 'Unknown event resource: %s' % resource
+            })
     return {
         'statusCode': 200,
-        'data': res
+        'data': result
     }
 
 
