@@ -19,13 +19,14 @@ class Publishers(Enum):
     STREAM = StreamPublisher
 
 
-def get_publisher(publisher: Union[str, Type[Publisher]],
+def get_publisher(publisher: Union[str, Publishers, Type[Publisher]],
                   storage: Union[str, Type[Storage]]) -> Type[Publisher]:
     if isinstance(publisher, Publisher):
         return publisher
+    if isinstance(publisher, str):
+        publisher = getattr(Publishers, publisher, Publishers.STREAM)
 
     storage = get_storage(storage)
-    publisher = getattr(Publishers, publisher, Publishers.STREAM)
     if publisher == Publishers.FACEBOOK:
         access_token = os.environ.get('FACEBOOK_ACCESS_TOKEN')
         facebook_api = Facebook(access_token)

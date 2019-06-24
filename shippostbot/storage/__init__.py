@@ -25,10 +25,12 @@ class Storages(Enum):
     DATA_URL = DataUrlStorage
 
 
-def get_storage(storage: Union[str, Type[Storage]]) -> Type[Storage]:
+def get_storage(storage: Union[str, Storages, Type[Storage]]) -> Type[Storage]:
     if isinstance(storage, Storage):
         return storage
-    storage = getattr(Storages, storage, Storages.TEMP_FILE)
+    if isinstance(storage, str):
+        storage = getattr(Storages, storage, Storages.TEMP_FILE)
+
     if storage == Storages.AWS_S3:
         region = os.environ.get('S3_REGION')
         bucket_name = os.environ.get('S3_BUCKET_NAME')
