@@ -1,9 +1,12 @@
 import os
 from base64 import b64decode
+from multiprocessing.pool import ThreadPool
+from typing import Union
 
 import boto3
 
 from shippostbot import main, set_cloudwatch, setup_from_env
+from shippostbot.log import create_logger
 from shippostbot.post import SelectionType
 from shippostbot.social import Publishers
 from shippostbot.storage import Storages
@@ -25,7 +28,7 @@ LAMBDA_ENVS = [
 ]
 
 
-def lambda_handler(event, context):
+def lambda_handler(event: dict, context: any) -> dict:
     set_cloudwatch(True)
     is_encrypted_env = 'ENCRYPTED_ENV' in os.environ
     if is_encrypted_env:
@@ -34,19 +37,35 @@ def lambda_handler(event, context):
     setup_from_env()
     selection_type = os.environ.get('SELECTION_TYPE',
                                     SelectionType.FROM_CHARACTER_TO_MEDIA)
-    result = []
-    for resource in event.get('resources', []):
-        if resource == 'ShippostBotFacebookScheduler':
-            result.append(main(selection_type,
-                               Publishers.FACEBOOK,
-                               Storages.AWS_S3))
-        else:
-            result.append({
-                'error': 'Unknown event resource: %s' % resource
-            })
+    resources = event.get('resources', [])
+    with ThreadPool() as pool:
+        results = pool.map(lambda x: exec_resource(selection_type, x), resources)
     return {
-        'statusCode': 200,
-        'data': result
+        'results': results
+    }
+
+
+def exec_resource(selection_type: Union[str, SelectionType],
+                  resource: str) -> dict:
+    logger = create_logger(exec_resource)
+    status = 'SUCCESS'
+    result = None
+    error = None
+    try:
+        if resource == 'ShippostBotFacebookScheduler':
+            result = main(selection_type,
+                          Publishers.FACEBOOK,
+                          Storages.AWS_S3)
+        else:
+            raise Exception('Unknown event resource: %s' % resource)
+    except Exception as e:
+        status = 'FAILED'
+        error = str(e)
+        logger.exception(error)
+    return {
+        'status': status,
+        'result': result,
+        'error': error,
     }
 
 
