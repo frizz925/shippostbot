@@ -7,13 +7,6 @@ from shippostbot.post import SelectionType
 
 
 class TestMain(unittest.TestCase):
-    def test_main_from_env(self):
-        shippostbot.set_cloudwatch(False)
-        res = shippostbot.main_from_env()
-        self.assertIsInstance(res.get('caption'), str)
-        self.assertIsInstance(res.get('comment'), str)
-        self.assertIsInstance(res.get('image_url'), str)
-
     def test_main(self):
         shippostbot.set_cloudwatch(False)
         for selection_type in SelectionType:
