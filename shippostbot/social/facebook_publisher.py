@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 from typing import NamedTuple, Optional, Type
 
@@ -67,10 +68,11 @@ class FacebookPublisher(Publisher):
         if caption is None:
             caption = photo.caption
         f = upload_photo(self.storage, photo)
-        self.logger.info(
-            'publish_photo() start, caption: "%s", image_url: "%s", content_type: "%s"' %
-            (caption, f.public_url, photo.image.content_type)
-        )
+        self.logger.info('publish_photo(%s)' % json.dumps({
+            'caption': caption,
+            'image_url': f.public_url,
+            'content_type': photo.image.content_type,
+        }))
         res = self.user_api.publish_photo(caption, f.public_url)
         f.delete()
         res_json = res.json()
@@ -79,12 +81,12 @@ class FacebookPublisher(Publisher):
         return FacebookPost(id=res_json['post_id'],
                             user_id=res_json['id'])
 
-    def publish_comment(self, post_id: str, content: str) -> FacebookComment:
-        self.logger.info(
-            'publish_comment() start, post_id: "%s", content: "%s"' %
-            (post_id, content)
-        )
-        res = self.api.publish_comment(post_id, content)
+    def publish_comment(self, post_id: str, comment: str) -> FacebookComment:
+        self.logger.info('publish_comment(%s)' % json.dumps({
+            'post_id': post_id,
+            'comment': comment,
+        }))
+        res = self.api.publish_comment(post_id, comment)
         res_json = res.json()
         self.logger.info('publish_comment() result: %s' % res_json)
         res.raise_for_status()

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from requests import Request, Response, Session
 
 from ..log import create_logger
@@ -52,7 +54,7 @@ class Facebook(object):
         return FacebookUser(self, user_id)
 
     def publish_comment(self, post_id: str, message: str) -> Response:
-        self.logger.info('Commenting on post %s, message: %s' % (post_id, message))
+        self.logger.info('publish_comment(%s)' % json.dumps({'post_id': post_id, 'message': message}))
         return self.post('%s/comments' % post_id, params={
             'message': message
         })
@@ -69,7 +71,7 @@ class FacebookUser(object):
         return self.root.post('%s/%s' % (endpoint, path), **kwargs)
 
     def publish_photo(self, caption: str, image_url: str) -> Response:
-        self.logger.info('Publishing photo, caption: %s, image url: %s' % (caption, image_url))
+        self.logger.info('publish_photo(%s)' % json.dumps({'caption': caption, 'image_url': image_url}))
         return self.post('photos', params={
             'caption': caption,
             'url': image_url
