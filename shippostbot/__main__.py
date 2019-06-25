@@ -5,8 +5,6 @@ import click
 
 from . import main, setup_from_env
 
-ARGV_MAPPING = ['selection_type', 'social_publisher', 'storage_type']
-
 
 @click.command()
 @click.option('-t', '--selection-type',
