@@ -3,7 +3,7 @@ import json
 import secrets
 from enum import Enum
 from multiprocessing.pool import ThreadPool
-from typing import Union
+from typing import List, Tuple, Union
 
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
@@ -59,7 +59,7 @@ def create_post(selection_type: SelectionType) -> Post:
                     comment=comment)
 
 
-def select_character_to_media() -> tuple:
+def select_character_to_media() -> Tuple[List[Character], List[Media]]:
     logger = create_logger(select_character_to_media)
 
     first_chara = select_random_character()
@@ -91,7 +91,7 @@ def select_character_to_media() -> tuple:
     raise Exception('Characters not found')
 
 
-def select_characters_by_media(media: dict) -> list:
+def select_characters_by_media(media: dict) -> List[Character]:
     logger = create_logger(select_characters_by_media)
     if media is None:
         raise Exception('Media not found')
@@ -113,7 +113,7 @@ def select_characters_by_media(media: dict) -> list:
     return selected_charas
 
 
-def select_random_character() -> dict:
+def select_random_character() -> Character:
     while True:
         chara = fetch_random_character()
         if not validate_character(chara):
@@ -121,7 +121,7 @@ def select_random_character() -> dict:
         return chara
 
 
-def select_media_by_characters(characters: list) -> list:
+def select_media_by_characters(characters: List[Character]) -> List[Media]:
     selected_media = []
     with ThreadPool(len(characters)) as pool:
         selected_media = pool.map(fetch_media_by_character, characters)
@@ -129,7 +129,7 @@ def select_media_by_characters(characters: list) -> list:
     return selected_media
 
 
-def fetch_media_by_character(chara: dict) -> dict:
+def fetch_media_by_character(chara: Character) -> Media:
     media_ids = chara.media
     if len(media_ids) <= 0:
         return None
@@ -159,18 +159,18 @@ def to_dict(obj) -> dict:
     return obj
 
 
-def create_caption(characters: list) -> str:
+def create_caption(characters: List[Character]) -> str:
     return ' x '.join(create_character_name(chara) for chara in characters)
 
 
-def create_comment(characters: list, media: list) -> str:
+def create_comment(characters: List[Character], media: List[Media]) -> str:
     comment = "Characters:\r\n" + create_characters_comment(characters)
     comment += "\r\n\r\n"
     comment += "Source(s):\r\n" + create_media_comment(media)
     return comment
 
 
-def create_characters_comment(characters: list) -> str:
+def create_characters_comment(characters: List[Character]) -> str:
     return '\r\n'.join(create_character_comment(chara) for chara in characters)
 
 
@@ -184,7 +184,7 @@ def create_character_name(character: Character) -> str:
     return ' '.join(name_parts).strip()
 
 
-def create_media_comment(media_list: list) -> str:
+def create_media_comment(media_list: List[Media]) -> str:
     # HACK: Since our namedtuple is unhashable, we use dict workaround
     media_dict = {}
     for media in media_list:
