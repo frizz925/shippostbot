@@ -7,7 +7,7 @@ resource "aws_lambda_function" "shippostbot_lambda" {
   source_code_hash = "${filebase64sha256("../artifacts/shippostbot.zip")}"
 
   runtime = "python3.7"
-  memory_size = 256
+  memory_size = 128
   timeout = 300
 
   layers = [
