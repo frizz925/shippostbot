@@ -1,11 +1,12 @@
 import os
 from base64 import b64decode
 from multiprocessing.pool import ThreadPool
-from typing import Union
+from typing import List, Union
 
 import boto3
 
 from shippostbot import main, set_cloudwatch, setup_from_env
+from shippostbot.entities import Character, Media
 from shippostbot.post import SelectionType
 from shippostbot.social import Publishers
 from shippostbot.storage import Storages
@@ -53,9 +54,17 @@ def exec_resource(selection_type: Union[str, SelectionType],
     if resource == os.environ.get('EVENT_FACEBOOK_ARN'):
         return main(selection_type,
                     Publishers.FACEBOOK,
-                    Storages.AWS_S3)
+                    Storages.AWS_S3,
+                    comment_fn=facebook_comment)
     else:
         raise Exception('Unknown event resource: %s' % resource)
+
+
+def facebook_comment(characters: List[Character],
+                     media: List[Media]) -> str:
+    comment = 'Source(s):\r\n'
+    comment += '\r\n'.join('%s: %s' % (m.title, m.url) for m in media)
+    return comment
 
 
 def decrypt_envs():

@@ -1,29 +1,25 @@
 import logging
 import os
-from typing import Type, Union
+from typing import Optional, Type, Union
 
 from . import image, log
 from .photo import create_photo
-from .post import SelectionType, create_post, get_selection_type
+from .post import SelectionType, TextProcessor, create_post, get_selection_type
 from .social import get_publisher
 from .social.abstracts import Publisher
 from .storage.abstracts import Storage
 
 
-def main_from_env() -> dict:
-    return main(os.environ.get('SELECTION_TYPE', ''),
-                os.environ.get('SOCIAL_PUBLISHER', ''),
-                os.environ.get('STORAGE_TYPE', ''))
-
-
 def main(selection_type: Union[str, SelectionType],
          publisher: Union[str, Type[Publisher]],
-         storage: Union[str, Type[Storage]]) -> dict:
+         storage: Union[str, Type[Storage]],
+         caption_fn: Optional[TextProcessor] = None,
+         comment_fn: Optional[TextProcessor] = None) -> dict:
     log.init_logger()
     selection_type = get_selection_type(selection_type)
     publisher = get_publisher(publisher, storage)
 
-    post = create_post(selection_type)
+    post = create_post(selection_type, caption_fn, comment_fn)
     if post is None:
         raise Exception('Unable to create post!')
     photo = create_photo(post)

@@ -3,12 +3,14 @@ import json
 import secrets
 from enum import Enum
 from multiprocessing.pool import ThreadPool
-from typing import List, Tuple, Union
+from typing import Callable, List, Optional, Tuple, Union
 
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
                        fetch_random_media)
 from .log import create_logger
+
+TextProcessor = Callable[[List[Character], List[Media]], str]
 
 
 class SelectionType(Enum):
@@ -17,7 +19,14 @@ class SelectionType(Enum):
     FROM_CHARACTER_TO_MEDIA = 2
 
 
-def create_post(selection_type: SelectionType) -> Post:
+def create_post(selection_type: SelectionType,
+                caption_fn: Optional[TextProcessor] = None,
+                comment_fn: Optional[TextProcessor] = None) -> Post:
+    if caption_fn is None:
+        caption_fn = create_caption
+    if comment_fn is None:
+        comment_fn = create_comment
+
     logger = create_logger(create_post)
     while True:
         selected_media = None
@@ -48,8 +57,8 @@ def create_post(selection_type: SelectionType) -> Post:
 
         media = selected_media
         characters = selected_charas
-        caption = create_caption(characters)
-        comment = create_comment(characters, media)
+        caption = caption_fn(characters, media)
+        comment = comment_fn(characters, media)
 
         logger.info('Selected characters: %s' % to_str(characters))
         logger.info('Selected media: %s' % to_str(media))
@@ -159,7 +168,7 @@ def to_dict(obj) -> dict:
     return obj
 
 
-def create_caption(characters: List[Character]) -> str:
+def create_caption(characters: List[Character], media: List[Media] = []) -> str:
     return ' x '.join(create_character_name(chara) for chara in characters)
 
 
