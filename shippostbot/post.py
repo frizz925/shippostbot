@@ -1,14 +1,20 @@
 import copy
 import json
 import secrets
+import time
 from enum import Enum
 from multiprocessing.pool import ThreadPool
 from typing import Callable, List, Optional, Tuple, Union
+
+from requests.exceptions import RequestException
 
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
                        fetch_random_media)
 from .log import create_logger
+
+MAX_FAILURE_RETRY = 3
+REQUEST_ERROR_DELAY_IN_MS = 3000
 
 TextProcessor = Callable[[List[Character], List[Media]], str]
 
@@ -28,6 +34,7 @@ def create_post(selection_type: SelectionType,
         comment_fn = create_comment
 
     logger = create_logger(create_post)
+    failure = 0
     while True:
         selected_media = None
         selected_charas = None
@@ -44,7 +51,17 @@ def create_post(selection_type: SelectionType,
                 selected_charas = select_characters_by_media(media)
                 selected_media = [media]
         except Exception as e:
-            logger.error('%s. Retrying...' % e)
+            # Fails too many times, just throw the last exception
+            if failure >= MAX_FAILURE_RETRY:
+                raise e
+
+            if isinstance(e, RequestException):
+                delay = REQUEST_ERROR_DELAY_IN_MS
+                logger.exception('[Requests] %s. Retrying after %dms' % (str(e), delay))
+                time.sleep(delay / 1000)
+            else:
+                logger.exception('%s. Retrying...' % str(e))
+            failure += 1
             continue
 
         # Since we're doing OTP, there should be at least two characters
