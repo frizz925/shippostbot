@@ -11,6 +11,7 @@ from requests.exceptions import RequestException
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
                        fetch_random_media)
+from .kyoani import fetchers as kyoani_fetchers
 from .log import create_logger
 
 MAX_FAILURE_RETRY = 3
@@ -23,6 +24,7 @@ class SelectionType(Enum):
     FROM_MEDIA = 0
     FROM_CHARACTERS = 1
     FROM_CHARACTER_TO_MEDIA = 2
+    KYOANI_TRIBUTE = 3
 
 
 def create_post(selection_type: SelectionType,
@@ -47,7 +49,10 @@ def create_post(selection_type: SelectionType,
                     selected_charas = pool.map(lambda x: select_random_character(), range(2))
                 selected_media = select_media_by_characters(selected_charas)
             else:
-                media = fetch_random_media()
+                if selection_type is SelectionType.KYOANI_TRIBUTE:
+                    media = kyoani_fetchers.fetch_random_media()
+                else:
+                    media = fetch_random_media()
                 selected_charas = select_characters_by_media(media)
                 selected_media = [media]
         except Exception as e:

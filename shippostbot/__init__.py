@@ -28,6 +28,7 @@ def main(selection_type: Union[str, SelectionType],
 
 def setup_from_env():
     set_logging_level(os.environ.get('LOGGING_LEVEL', ''))
+    set_image_debug(os.environ.get('DEBUG_IMAGE') == 'true')
 
 
 def set_logging_level(logging_level: str):
@@ -37,6 +38,10 @@ def set_logging_level(logging_level: str):
 
 def set_cloudwatch(enabled: bool):
     log.CLOUDWATCH_ENABLED = enabled
+
+
+def set_image_debug(enabled: bool):
+    image.DEBUG_IMAGE = enabled
 
 
 __all__ = ['image', 'log']
