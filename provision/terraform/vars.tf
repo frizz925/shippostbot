@@ -21,3 +21,8 @@ variable "logging_level" {
   type = "string"
   default = "INFO"
 }
+
+variable "selection_type" {
+  type = "string"
+  default = "FROM_CHARACTER_TO_MEDIA"
+}
