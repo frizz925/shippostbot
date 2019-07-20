@@ -1,4 +1,3 @@
-import secrets
 from typing import List, NamedTuple, Type
 
 import requests
@@ -6,6 +5,7 @@ import requests
 from .entities import Character, Media
 from .graphql import Fields, Query, Root
 from .log import create_logger
+from .rng import random_time_based
 
 ANILIST_BASE_URL = 'https://graphql.anilist.co'
 REQUESTS_SESSION = requests.Session()
@@ -24,8 +24,9 @@ def fetch_random_character() -> Character:
 
 
 def fetch_random(fn_total, fn_page_fetch, fn_fetch) -> Type[NamedTuple]:
+    random = random_time_based()
     total = fn_total()
-    page = secrets.randbelow(total)
+    page = random.randint(1, total)
     node = fn_page_fetch(page, 1).pop()
     return fn_fetch(node['id'])
 
