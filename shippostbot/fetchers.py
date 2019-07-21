@@ -35,6 +35,7 @@ def fetch_media(media_id: int) -> Media:
     res = fetch('Media', media_id, [
         'id',
         'siteUrl',
+        'format',
         Fields('title', 'userPreferred'),
         Fields('characters', Fields('edges', Fields('node', 'id')))
     ])
@@ -42,11 +43,15 @@ def fetch_media(media_id: int) -> Media:
 
 
 def fetch_media_total() -> int:
-    return fetch_total(Fields('media', 'id'))
+    return fetch_total(query_media())
 
 
 def fetch_media_page(page: int, per_page: int) -> List[dict]:
-    return fetch_page(Fields('media', 'id'), page, per_page)
+    return fetch_page(query_media(), page, per_page)
+
+
+def query_media() -> Fields:
+    return Fields('media', 'id')
 
 
 def fetch_character(chara_id: int) -> Character:
@@ -58,6 +63,7 @@ def fetch_character(chara_id: int) -> Character:
         Query('media', {
             'page': 1,
             'perPage': 1,
+            'sort': 'POPULARITY_DESC',
         }, Fields('edges', Fields('node', 'id')))
     ])
     return to_character(res)
@@ -113,7 +119,8 @@ def to_media(data: dict) -> Media:
     return Media(id=data['id'],
                  url=data['siteUrl'],
                  title=data['title']['userPreferred'],
-                 characters=[edge['node']['id'] for edge in data['characters']['edges']])
+                 characters=[edge['node']['id'] for edge in data['characters']['edges']],
+                 format=data['format'])
 
 
 def to_character(data: dict) -> Character:

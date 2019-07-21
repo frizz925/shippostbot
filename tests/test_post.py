@@ -68,7 +68,8 @@ Darling in the Franxx: https://anilist.co/anime/99423/Darling-in-the-Franxx/'''
             media = Media(id='',
                           title='',
                           url='',
-                          characters=None)
+                          characters=None,
+                          format='')
             select_characters_by_media(media)
 
     def test_get_selection_type(self):
@@ -97,7 +98,8 @@ def create_mock_media() -> List[Media]:
     media = Media(id=99423,
                   title='Darling in the Franxx',
                   url='https://anilist.co/anime/99423/Darling-in-the-Franxx/',
-                  characters=[124380, 124381])
+                  characters=[124380, 124381],
+                  format='TV')
     return [media]
 
 
@@ -105,7 +107,8 @@ def mock_media(*chara_ids: List[int]) -> Media:
     return Media(id=0,
                  title='Mock Media',
                  url='http://example.org',
-                 characters=chara_ids)
+                 characters=chara_ids,
+                 format='TV')
 
 
 if __name__ == '__main__':

@@ -8,6 +8,7 @@ class Media(NamedTuple):
     title: str
     url: str
     characters: List[Character]
+    format: str
 
 
 class Character(NamedTuple):
