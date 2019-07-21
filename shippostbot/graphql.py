@@ -86,7 +86,9 @@ class Query(Fields):
     def render_params(self) -> str:
         return ', '.join(self.render_param(k, v) for k, v in self.params.items())
 
-    def render_param(self, key: str, value: str) -> str:
+    def render_param(self, key: str, value: Union[str, list]) -> str:
+        if isinstance(value, list):
+            value = '[%s]' % ', '.join(value)
         return '%s: %s' % (key, value)
 
 

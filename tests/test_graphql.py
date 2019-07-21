@@ -40,6 +40,14 @@ EXPECTED_ALIAS = '''{
   }
 }'''
 
+EXPECTED_ARRAY = '''{
+  Page(page: 1, perPage: 1) {
+    media(format_in: [TV, MOVIE]) {
+      id
+    }
+  }
+}'''
+
 
 class TestGraphQL(unittest.TestCase):
     def test_query(self):
@@ -88,6 +96,17 @@ class TestGraphQL(unittest.TestCase):
         ], alias='Media'))
         root.add(page)
         self.assertEqual(str(root), EXPECTED_ALIAS)
+
+    def test_array(self):
+        root = Root()
+        page = Query('Page', {
+            'page': 1,
+            'perPage': 1
+        }, Query('media', {
+            'format_in': ['TV', 'MOVIE'],
+        }, 'id'))
+        root.add(page)
+        self.assertEqual(str(root), EXPECTED_ARRAY)
 
 
 if __name__ == '__main__':
