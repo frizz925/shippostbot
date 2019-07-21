@@ -1,7 +1,9 @@
 import copy
 import json
+import time
 from enum import Enum
 from multiprocessing.pool import ThreadPool
+from random import Random
 from typing import Callable, List, Optional, Tuple, Union
 
 from requests.exceptions import RequestException
@@ -52,8 +54,10 @@ def create_post(selection_type: SelectionType,
                     media = kyoani_fetchers.fetch_random_media()
                 else:
                     media = fetch_random_media()
-                selected_charas = select_characters_by_media(media)
-                selected_media = [media]
+                if not validate_media(media):
+                    logger.warn('Invalid fetched media: %s' % str(media))
+                    continue
+                selected_charas, selected_media = select_characters_by_media(media)
         except Exception as e:
             # Fails too many times, just throw the last exception
             if failure >= MAX_FAILURE_RETRY:
@@ -78,11 +82,11 @@ def create_post(selection_type: SelectionType,
 
         media = selected_media
         characters = selected_charas
-        caption = caption_fn(characters, media)
-        comment = comment_fn(characters, media)
-
         logger.info('Selected characters: %s' % to_str(characters))
         logger.info('Selected media: %s' % to_str(media))
+
+        caption = caption_fn(characters, media)
+        comment = comment_fn(characters, media)
         return Post(characters=characters,
                     media=media,
                     caption=caption,
@@ -101,6 +105,8 @@ def select_character_to_media() -> Tuple[List[Character], List[Media]]:
 
     media_id = media_ids.pop(0)
     media = fetch_media(media_id)
+    if not validate_media(media):
+        raise Exception('Invalid media')
     logger.info('Fetched media: %s' % to_str(media))
 
     chara_ids = copy.copy(media.characters)
@@ -121,27 +127,53 @@ def select_character_to_media() -> Tuple[List[Character], List[Media]]:
     raise Exception('Characters not found')
 
 
-def select_characters_by_media(media: dict) -> List[Character]:
+def select_characters_by_media(media: Media) -> Tuple[List[Character], List[Media]]:
     random = random_time_based()
     logger = create_logger(select_characters_by_media)
     if media is None:
         raise Exception('Media not found')
     logger.info('Fetched media: %s' % to_str(media))
 
-    chara_ids = copy.copy(media.characters)
+    chara_ids = media.characters
     if chara_ids is None:
         raise Exception('Characters not found')
 
-    selected_charas = []
-    while len(selected_charas) < 2 and len(chara_ids) > 0:
+    first_chara = select_and_fetch_character(chara_ids)
+    if first_chara is None:
+        raise Exception('No suitable character found')
+
+    if first_chara.media[0] != media.id:
+        media = fetch_media_by_character(first_chara)
+        chara_ids = media.characters
+    logger.info('Fetched first character: %s' % to_str(first_chara))
+
+    chara_ids = copy.copy(chara_ids)
+    second_chara = None
+    while second_chara is None and len(chara_ids) > 0:
         chara_id = random.choice(chara_ids)
         chara_ids.remove(chara_id)
         chara = fetch_character(chara_id)
         if not validate_character(chara):
             continue
-        selected_charas.append(chara)
+        logger.info('Fetched second character: %s' % to_str(chara))
+        second_chara = chara
 
-    return selected_charas
+    return ([first_chara, second_chara], [media])
+
+
+def select_and_fetch_character(chara_ids: List[int],
+                               random: Optional[Random] = None) -> Character:
+    if random is None:
+        random = random_time_based()
+    chara_ids = copy.copy(chara_ids)
+    while len(chara_ids) > 0:
+        chara_id = random.choice(chara_ids)
+        chara_ids.remove(chara_id)
+        chara = fetch_character(chara_id)
+        if not validate_character(chara):
+            continue
+        return chara
+    return None
 
 
 def select_random_character() -> Character:
@@ -160,12 +192,26 @@ def select_media_by_characters(characters: List[Character]) -> List[Media]:
     return selected_media
 
 
+def fetch_character_by_media(media: Media) -> Character:
+    random = random_time_based()
+    chara_id = random.choice(media.characters)
+    chara = fetch_character(chara_id)
+    return chara if validate_character(chara) else None
+
+
 def fetch_media_by_character(chara: Character) -> Media:
     media_ids = chara.media
     if len(media_ids) <= 0:
         return None
     media_id = media_ids.pop(0)
-    return fetch_media(media_id)
+    media = fetch_media(media_id)
+    return media if validate_media(media) else None
+
+
+def validate_media(media: Media) -> bool:
+    if media is None:
+        return False
+    return True
 
 
 def validate_character(chara: Character) -> bool:
