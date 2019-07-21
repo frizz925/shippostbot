@@ -1,7 +1,5 @@
 import copy
 import json
-import secrets
-import time
 from enum import Enum
 from multiprocessing.pool import ThreadPool
 from typing import Callable, List, Optional, Tuple, Union
@@ -13,6 +11,7 @@ from .fetchers import (fetch_character, fetch_media, fetch_random_character,
                        fetch_random_media)
 from .kyoani import fetchers as kyoani_fetchers
 from .log import create_logger
+from .rng import random_time_based
 
 MAX_FAILURE_RETRY = 3
 REQUEST_ERROR_DELAY_IN_MS = 3000
@@ -91,8 +90,8 @@ def create_post(selection_type: SelectionType,
 
 
 def select_character_to_media() -> Tuple[List[Character], List[Media]]:
+    random = random_time_based()
     logger = create_logger(select_character_to_media)
-
     first_chara = select_random_character()
     logger.info('Fetched first character: %s' % to_str(first_chara))
 
@@ -106,7 +105,7 @@ def select_character_to_media() -> Tuple[List[Character], List[Media]]:
 
     chara_ids = copy.copy(media.characters)
     while len(chara_ids) > 0:
-        chara_id = secrets.choice(chara_ids)
+        chara_id = random.choice(chara_ids)
         chara_ids.remove(chara_id)
         # Avoid same character
         if chara_id == first_chara.id:
@@ -123,6 +122,7 @@ def select_character_to_media() -> Tuple[List[Character], List[Media]]:
 
 
 def select_characters_by_media(media: dict) -> List[Character]:
+    random = random_time_based()
     logger = create_logger(select_characters_by_media)
     if media is None:
         raise Exception('Media not found')
@@ -134,7 +134,7 @@ def select_characters_by_media(media: dict) -> List[Character]:
 
     selected_charas = []
     while len(selected_charas) < 2 and len(chara_ids) > 0:
-        chara_id = secrets.choice(chara_ids)
+        chara_id = random.choice(chara_ids)
         chara_ids.remove(chara_id)
         chara = fetch_character(chara_id)
         if not validate_character(chara):
