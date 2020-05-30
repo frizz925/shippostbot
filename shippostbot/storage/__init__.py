@@ -34,6 +34,6 @@ def get_storage(storage: Union[str, Storages, Type[Storage]]) -> Type[Storage]:
     if storage == Storages.AWS_S3:
         region = os.environ.get('S3_REGION')
         bucket_name = os.environ.get('S3_BUCKET_NAME')
-        bucket = S3Bucket(region, bucket_name, 'public-read')
+        bucket = S3Bucket(region, bucket_name, 'private')
         return Storages.AWS_S3.value(bucket)
     return storage.value()

@@ -43,7 +43,10 @@ data "aws_iam_policy_document" "shippostbot_s3_policy" {
       type        = "AWS"
       identifiers = ["${aws_iam_role.shippostbot_lambda_role.arn}"]
     }
-    resources = ["${aws_s3_bucket.shippostbot_s3.arn}/*"]
+    resources = [
+      "${aws_s3_bucket.shippostbot_s3.arn}",
+      "${aws_s3_bucket.shippostbot_s3.arn}/*",
+    ]
   }
 
   statement {
