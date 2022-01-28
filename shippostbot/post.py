@@ -11,6 +11,7 @@ from requests.exceptions import RequestException
 from .entities import Character, Media, Post
 from .fetchers import (fetch_character, fetch_media, fetch_random_character,
                        fetch_random_media)
+from .filter import PostFilter
 from .kyoani import fetchers as kyoani_fetchers
 from .log import create_logger
 from .rng import random_time_based
@@ -30,7 +31,8 @@ class SelectionType(Enum):
 
 def create_post(selection_type: SelectionType,
                 caption_fn: Optional[TextProcessor] = None,
-                comment_fn: Optional[TextProcessor] = None) -> Post:
+                comment_fn: Optional[TextProcessor] = None,
+                filter_fn: Optional[PostFilter] = None) -> Post:
     if caption_fn is None:
         caption_fn = create_caption
     if comment_fn is None:
@@ -87,10 +89,16 @@ def create_post(selection_type: SelectionType,
 
         caption = caption_fn(characters, media)
         comment = comment_fn(characters, media)
-        return Post(characters=characters,
+        post = Post(characters=characters,
                     media=media,
                     caption=caption,
                     comment=comment)
+
+        # Update: Filter our posts to avoid containing certain bannable words on some platforms (eg: Facebook)
+        if filter_fn is not None and not filter_fn(post):
+            logger.info('Post didn\'t pass the filter. Retrying...')
+            continue
+        return post
 
 
 def select_character_to_media() -> Tuple[List[Character], List[Media]]:

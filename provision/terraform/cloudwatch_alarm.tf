@@ -10,6 +10,11 @@ resource "aws_cloudwatch_metric_alarm" "shippostbot_alarm" {
   alarm_description = "Monitors ShippostBot errors"
   insufficient_data_actions = []
 
+  alarm_actions = [
+    # TODO: Define the alarm action here
+  ]
+  datapoints_to_alarm = 4
+
   tags = {
     App = "ShippostBot"
     Environment = "Production"

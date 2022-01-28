@@ -2,8 +2,8 @@
   file: path={{ staging_dir }} state=absent
 - name: Listing tracked source files
   shell: >-
-    git ls-tree -r --name-only master |
-    grep -E '.py$' |
+    git ls-tree -r --name-only HEAD |
+    grep -E '.(py|txt)$' |
     grep -vE '^(tests/|main.py)'
   args:
     chdir: "{{ project_dir }}"
@@ -16,7 +16,7 @@
   copy: src={{ project_dir }}/{{ item }} dest={{ staging_dir }}/{{ item }}
   with_items: "{{ git_files.stdout_lines | list }}"
 - name: Compiling bytecodes
-  shell: python3.7 -m compileall .
+  shell: python3.8 -m compileall .
   args:
     chdir: "{{ staging_dir }}"
 - name: Archiving main program from staging directory

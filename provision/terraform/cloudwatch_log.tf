@@ -24,6 +24,6 @@ data "aws_iam_policy_document" "shippostbot_log_access_policy" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["${aws_cloudwatch_log_group.shippostbot_log_group.arn}"]
+    resources = ["${aws_cloudwatch_log_group.shippostbot_log_group.arn}:*"]
   }
 }

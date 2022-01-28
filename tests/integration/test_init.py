@@ -6,7 +6,7 @@ import shippostbot
 from shippostbot.post import SelectionType
 
 
-class TestMain(unittest.TestCase):
+class TestInit(unittest.TestCase):
     def test_main(self):
         shippostbot.set_cloudwatch(False)
         for selection_type in SelectionType:

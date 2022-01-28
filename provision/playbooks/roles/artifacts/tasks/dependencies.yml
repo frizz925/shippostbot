@@ -1,7 +1,7 @@
 - name: Removing virtualenv directory
   file: path={{ virtualenv_dir }} state=absent
 - name: Creating new staging environment
-  shell: "virtualenv -p $(which python3.7) {{ virtualenv_dir }}"
+  shell: "virtualenv -p $(which python3.8) {{ virtualenv_dir }}"
 - name: Installing dependencies into staging environment
   shell: "{{ virtualenv_bin }}/pip install -r requirements.txt"
   args:
