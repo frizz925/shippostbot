@@ -7,6 +7,7 @@ import boto3
 
 from shippostbot import main, set_cloudwatch, setup_from_env
 from shippostbot.entities import Character, Media
+from shippostbot.filter import Filters
 from shippostbot.post import SelectionType
 from shippostbot.social import Publishers
 from shippostbot.storage import Storages
@@ -53,9 +54,10 @@ def exec_resource(selection_type: Union[str, SelectionType],
                   resource: str) -> dict:
     if resource == os.environ.get('EVENT_FACEBOOK_ARN'):
         return main(selection_type,
-                    Publishers.FACEBOOK,
-                    Storages.AWS_S3,
-                    comment_fn=facebook_comment)
+                    publisher=Publishers.FACEBOOK,
+                    storage=Storages.AWS_S3,
+                    comment_fn=facebook_comment,
+                    filter_fn=Filters.FILE)
     else:
         raise Exception('Unknown event resource: %s' % resource)
 
