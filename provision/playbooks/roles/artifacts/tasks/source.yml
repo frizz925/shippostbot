@@ -16,7 +16,7 @@
   copy: src={{ project_dir }}/{{ item }} dest={{ staging_dir }}/{{ item }}
   with_items: "{{ git_files.stdout_lines | list }}"
 - name: Compiling bytecodes
-  shell: python3.7 -m compileall .
+  shell: python3.10 -m compileall .
   args:
     chdir: "{{ staging_dir }}"
 - name: Archiving main program from staging directory

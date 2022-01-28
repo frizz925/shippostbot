@@ -1,5 +1,5 @@
 
-python_version: python3.7
+python_version: python3.10
 project_dir: "{{ playbook_dir }}/../.."
 artifacts_dir: "{{ playbook_dir }}/../artifacts"
 staging_dir: "{{ artifacts_dir }}/staging"
