@@ -6,7 +6,7 @@ resource "aws_lambda_function" "shippostbot_lambda" {
   filename = "../artifacts/shippostbot.zip"
   source_code_hash = "${filebase64sha256("../artifacts/shippostbot.zip")}"
 
-  runtime = "python3.10"
+  runtime = "python3.8"
   memory_size = 128
   timeout = 300
 
@@ -35,7 +35,7 @@ resource "aws_lambda_function" "shippostbot_lambda" {
 
 resource "aws_lambda_layer_version" "shippostbot_dependencies" {
   layer_name = "ShippostBotDependencies"
-  compatible_runtimes = ["python3.10"]
+  compatible_runtimes = ["python3.8"]
   license_info = "GPL-3.0-or-later"
 
   filename = "../artifacts/shippostbot-deps.zip"
